@@ -7,6 +7,7 @@
 	<body>
 		<canvas id="glFrame"/>
 		<script type="text/javasrcipt">
+// setup dependencies
 const dependencies = {
 	gl-matrix: false;
 	asm: false;
@@ -21,9 +22,40 @@ function LoadedDep(dep) {
 	dependencies[dep] = true;
 	loadCallBacks.forEach(function(el) {el(dependencies);});
 }
+
+// setup webasm
 const Module = {
 	onRuntimeInitialized=function(){LodaedASM();};	
 };
+
+// load gl context
+const gl = document.getElementById('glFrame').getContext('webgl');
+if(!!!gl) {
+	alert('critial error: no webGl support, or data Corruption');
+}
+
+// setup refresh loop
+var vendors = ['webkit', 'moz'];
+for(var x = 0; x < vendors.length && !window.requestAnimationFrame; ++x) {
+    window.requestAnimationFrame = window[vendors[x]+'RequestAnimationFrame'];
+    window.cancelAnimationFrame =
+      window[vendors[x]+'CancelAnimationFrame'] || window[vendors[x]+'CancelRequestAnimationFrame'];
+}
+if (!window.requestAnimationFrame)
+    window.requestAnimationFrame = function(callback, element) {
+        var currTime = new Date().getTime();
+        var timeToCall = Math.max(0, 16 - (currTime - lastTime));
+        var id = window.setTimeout(function() { callback(currTime + timeToCall); },
+          timeToCall);
+        lastTime = currTime + timeToCall;
+        return id;
+};
+
+if (!window.cancelAnimationFrame)
+    window.cancelAnimationFrame = function(id) {
+        clearTimeout(id);
+};
+
 		</script>
 		<script async type="text/javascript" onload="LoadedDep('gl-matrix')" src="gl-matrix.js"></script>
 		<srcipt async type="text/javascript" onload="LoadedDep('render')" src="render.js"></script>

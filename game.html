@@ -1,0 +1,32 @@
+<html>
+	<head>
+		<meta charset="UTF-8" />
+		<title>Stop the Toxic</title>>
+		<style>html,body{height: 100%; margin: 0;}</style>
+	</head>
+	<body>
+		<canvas id="glFrame"/>
+		<script type="text/javasrcipt">
+const dependencies = {
+	gl-matrix: false;
+	asm: false;
+	render: false;
+};
+const loadCallBacks = [];
+function LodaedASM() {
+	// function mapping
+	LoadedDep('asm');
+}
+function LoadedDep(dep) {
+	dependencies[dep] = true;
+	loadCallBacks.forEach(function(el) {el(dependencies);});
+}
+const Module = {
+	onRuntimeInitialized=function(){LodaedASM();};	
+};
+		</script>
+		<script async type="text/javascript" onload="LoadedDep('gl-matrix')" src="gl-matrix.js"></script>
+		<srcipt async type="text/javascript" onload="LoadedDep('render')" src="render.js"></script>
+		<srcipt async type="text/javascript" src="wasmLoader.js"></srcipt>
+	</body>
+</html>

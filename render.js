@@ -102,7 +102,7 @@ void main(void) {
 	gl_FragColor = texture2D(uSampler, vTexCord);
 }
 `;
-// @end-glsl@
+// @end=glsl@
  
 }
 

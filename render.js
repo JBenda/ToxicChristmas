@@ -9,6 +9,7 @@ function loadShader(gl, _type, _src) {
 	return shader;
 }
 
+
 function loadProgram(gl, _vsCode, _fsCode) {
 	const vs = loadShader(gl, gl.VERTEX_SHADER, _vsCode);
 	const fs = loadShader(gl, gl.FRAGMENT_SHADER, _fsCode);
@@ -58,4 +59,50 @@ function loadTex(gl, url) {
 	return tex;
 }
 
+function clear(gl, clear,color,depth) {
+	if (clear === undefined) clear = gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT; 
+	if (color === undefined) color = [0.2f, 0.3f, 0.1f, 1];
+	if (depth === undefined) depth = 1.0f;
+	gl.clearColor(color[0], color[1], color[2], color[3]);
+	gl.clearDepth(depth);
+	gl.enable(gl.DEPTH_TEST);
+	gl.depthFunc(gl.LEQUAL);
+	
+	gl.clear(clear);
+}
+
+function initStaticArrayBuffer(gl, data, type) {
+	const buffer = gl.createBuffer();
+	gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+	gl.bufferData(gl.ARRAY_BUFFER, new type(data), gl.STATIC_DRAW);
+	return buffer;
+}
+	
+function buildVannilaPipe(gl) {
+// @beg=glsl@
+	const vsSrc=`
+attribute vec4 aVecPos;
+attribute vec2 aTexCord;
+
+uniform mat4 uView;
+uniform mat4 uProj;
+
+varying highp vec2 vTexCord;
+
+void main(void) {
+	gl_Position = uProj * uMoj * aVecPos;
+	vTexCord = aTexCord;
+}
+`;
+	const fsSrc=`
+varying highp vec2 vTexCord;
+uniform sampler2D uSampler;
+
+void main(void) {
+	gl_FragColor = texture2D(uSampler, vTexCord);
+}
+`;
+// @end-glsl@
+ 
+}
 

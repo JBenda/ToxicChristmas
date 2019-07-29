@@ -2,30 +2,39 @@
 	<head>
 		<meta charset="UTF-8" />
 		<title>Stop the Toxic</title>>
-		<style>html,body{height: 100%; margin: 0;}</style>
+		<style>html,body{height: 100%; margin: 0; background-color}</style>
 	</head>
 	<body>
-		<canvas id="glFrame"/>
-		<script type="text/javasrcipt">
+		<canvas id="glFrame"></canvas>
+		<script type="text/javascript"> 
 // setup dependencies
 const dependencies = {
-	gl-matrix: false;
-	asm: false;
-	render: false;
+	['gl-matrix']: {loaded: null},
+	asm: {loaded: null},
+	render: {loaded: null}
 };
-const loadCallBacks = [];
+
+function logStuff() {
+	const mat = mat4.create();
+	mat4.ortho(mat, 0,10, 0, 5, 0.9, 1.1);
+	console.log(mat);
+	const arr = new Uint8Array([255, 0, 0, 255]); 
+	console.log(arr);
+}
+const loadCallBacks = [
+	{dep: ['gl-matrix'], f: logStuff}];
+
+function LoadedDep(dep) {
+	dependencies[dep].loaded = true;
+	loadCallBacks.filter(function(el) {return !!!el.dep || el.dep.includes(dep);}).forEach(function(el) {el.f();});
+}
 function LodaedASM() {
 	// function mapping
 	LoadedDep('asm');
 }
-function LoadedDep(dep) {
-	dependencies[dep] = true;
-	loadCallBacks.forEach(function(el) {el(dependencies);});
-}
-
 // setup webasm
 const Module = {
-	onRuntimeInitialized=function(){LodaedASM();};	
+	onRuntimeInitialized: function(){LodaedASM();}	
 };
 
 // load gl context
@@ -53,12 +62,11 @@ if (!window.requestAnimationFrame)
 
 if (!window.cancelAnimationFrame)
     window.cancelAnimationFrame = function(id) {
-        clearTimeout(id);
+      clearTimeout(id);
 };
-
 		</script>
-		<script async type="text/javascript" onload="LoadedDep('gl-matrix')" src="gl-matrix.js"></script>
-		<srcipt async type="text/javascript" onload="LoadedDep('render')" src="render.js"></script>
-		<srcipt async type="text/javascript" src="wasmLoader.js"></srcipt>
+		<script async onload="LoadedDep('gl-matrix')" src='gl-matrix.js'></script>
+		<script async onload="LoadedDep('render')" src='render.js'></script>
+		<script async src='wasmLoader.js'></script>
 	</body>
 </html>

@@ -59,10 +59,10 @@ function loadTex(gl, url) {
 	return tex;
 }
 
-function clear(gl, clear,color,depth) {
+function setupClear(gl, clear,color,depth) {
 	if (clear === undefined) clear = gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT; 
-	if (color === undefined) color = [0.2f, 0.3f, 0.1f, 1];
-	if (depth === undefined) depth = 1.0f;
+	if (color === undefined) color = [0.2, 0.3, 0.1, 1];
+	if (depth === undefined) depth = 1.0;
 	gl.clearColor(color[0], color[1], color[2], color[3]);
 	gl.clearDepth(depth);
 	gl.enable(gl.DEPTH_TEST);
@@ -103,6 +103,23 @@ void main(void) {
 }
 `;
 // @end=glsl@
- 
+
+	const prog = loadProgram(gl, vsSrc, fsSrc);
+	if (!prog) {
+		console.err('failed to load Prgogram');
+		return null;
+	}
+	return prog; 
 }
 
+var numPlayers = 0;
+function createPlayer(gl) {
+	numPlayers += 1;
+	if (numPlayers > 1) console.war('more then one player is constructed');
+	const player = {};
+	const anitmations = []; // {frames: int, name: 'name'}
+	player.buffers = {}; //{pos: undefined; tex: undefined;};
+	player.view = undefined; //matrix
+	// init wasm player
+	return player;
+}

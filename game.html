@@ -15,25 +15,50 @@ const dependencies = {
 };
 
 function logStuff() {
+	console.log('logStuff call');
 	const mat = mat4.create();
 	mat4.ortho(mat, 0,10, 0, 5, 0.9, 1.1);
 	console.log(mat);
 	const arr = new Uint8Array([255, 0, 0, 255]); 
 	console.log(arr);
 }
+const sharedObjects = {
+	playerView: {id: 0, size: 16, type: Float32Array, data: undefined},
+	gameView: {id: 1, size: 16, type: Float32Array, data: undefined}
+};
+const matrices = {
+	playerView: undefined,
+	gameView: undefined
+};
+function linkSharedObj() {
+	const keys = Object.keys(sharedObjects);
+	keys.forEach(function(k, i){
+		const obj = sharedObjects[k];
+		obj.data = new obj.type(Module.HEAP32.buffer, wasmFn.GetPtr(i), obj.size);
+	});
+	// link to matrixes
+	Object.keys(matrices).forEach(function(k){ matrices[k] = sharedObjects[k].data;});
+}
 const loadCallBacks = [
-	{dep: ['gl-matrix'], f: logStuff}];
+	{dep: ['gl-matrix'], f: logStuff},
+	{dep: ['asm', 'gl-matrix'], f:  linkSharedObj}];
 
 function LoadedDep(dep) {
 	dependencies[dep].loaded = true;
-	loadCallBacks.filter(function(el) {return !!!el.dep || el.dep.includes(dep);}).forEach(function(el) {el.f();});
+	loadCallBacks.filter(function(el) {
+		return  !!!el.dep  || (el.dep.includes(dep) && el.dep.every(function(d) {return dependencies[d].loaded;}));})
+		.forEach(function(el) {el.f();});
 }
+const wasmFn = {};
 function LodaedASM() {
 	// function mapping
+	wasmFn.loadMatrix = Module.cwrap('loadMatrix', null, ['number']);
+	wasmFn.GetPtr = Module.cwrap('GetPtr', 'number', ['number']);
+
 	LoadedDep('asm');
 }
 // setup webasm
-const Module = {
+var Module = {
 	onRuntimeInitialized: function(){LodaedASM();}	
 };
 

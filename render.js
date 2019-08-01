@@ -3,7 +3,7 @@ function loadShader(gl, _type, _src) {
 	gl.shaderSource(shader, _src);
 	gl.compileShader(shader);
 	if(!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-		console.err('failed to compileShader: ' + gl.getShaderInfoLog(shader));
+		console.error('failed to compileShader: ' + gl.getShaderInfoLog(shader));
 		return null;
 	}
 	return shader;
@@ -15,7 +15,7 @@ function loadProgram(gl, _vsCode, _fsCode) {
 	const fs = loadShader(gl, gl.FRAGMENT_SHADER, _fsCode);
 
 	if(!vs || !fs) {
-		console.err('can\'t build program without shader');
+		console.error('can\'t build program without shader');
 		return null;
 	}
 	const prog = gl.createProgram();
@@ -23,7 +23,7 @@ function loadProgram(gl, _vsCode, _fsCode) {
 	gl.attachShader(prog, fs);
 	gl.linkProgram(prog);
 	if(!gl.getProgramParameter(prog, gl.LINK_STATUS)) {
-		console.err('unable to link program: ' + gl.getProgramLog(prog));
+		console.error('unable to link program: ' + gl.getProgramLog(prog));
 		return null;
 	}
 	return prog;
@@ -90,7 +90,7 @@ uniform mat4 uProj;
 varying highp vec2 vTexCord;
 
 void main(void) {
-	gl_Position = uProj * uMoj * aVecPos;
+	gl_Position = uProj * uView * aVecPos;
 	vTexCord = aTexCord;
 }
 `;
@@ -106,10 +106,19 @@ void main(void) {
 
 	const prog = loadProgram(gl, vsSrc, fsSrc);
 	if (!prog) {
-		console.err('failed to load Prgogram');
+		console.error('failed to load Prgogram');
 		return null;
 	}
 	return prog; 
+}
+
+function buildScene(gl) {
+	const prog = buildVannilaPipe(gl);
+	setupClear(gl, undefined, [0.2, 0.3, 0.2, 1], 1.1);
+	const drawCalls = {
+		gl,
+		vanilla: prog
+	};
 }
 
 var numPlayers = 0;

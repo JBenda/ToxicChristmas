@@ -11,37 +11,46 @@
 const dependencies = {
 	['gl-matrix']: {loaded: null},
 	asm: {loaded: null},
-	render: {loaded: null}
+	render: {loaded: null},
+	bridge: {loaded: null},
 };
 
-function logStuff() {
-	console.log('logStuff call');
-	const mat = mat4.create();
-	mat4.ortho(mat, 0,10, 0, 5, 0.9, 1.1);
-	console.log(mat);
-	const arr = new Uint8Array([255, 0, 0, 255]); 
-	console.log(arr);
-}
 const sharedObjects = {
 	playerView: {id: 0, size: 16, type: Float32Array, data: undefined},
-	gameView: {id: 1, size: 16, type: Float32Array, data: undefined}
+	gameView: {id: 1, size: 16, type: Float32Array, data: undefined},
+	input: {id: 2, size: 8, type: Uint8Array, data: undefined}
 };
+
+const input = {
+	data: undefined,
+	clear: function(){},
+	jump: function(){},
+	left: function(){},
+	right: function(){},
+	pause: function(){},
+	comp: function(){},
+	restart: function(){}
+}
 const matrices = {
 	playerView: undefined,
 	gameView: undefined
 };
 function linkSharedObj() {
+	console.log(Module);
 	const keys = Object.keys(sharedObjects);
 	keys.forEach(function(k, i){
 		const obj = sharedObjects[k];
-		obj.data = new obj.type(Module.HEAP32.buffer, wasmFn.GetPtr(i), obj.size);
+		obj.data = new obj.type(Module.HEAP8.buffer, wasmFn.GetPtr(i), obj.size);
+		console.log('Ptr: ' + wasmFn.GetPtr(i));
 	});
 	// link to matrixes
 	Object.keys(matrices).forEach(function(k){ matrices[k] = sharedObjects[k].data;});
+	
+	input.data = sharedObjects.input.data;
 }
 const loadCallBacks = [
-	{dep: ['gl-matrix'], f: logStuff},
-	{dep: ['asm', 'gl-matrix'], f:  linkSharedObj}];
+	{dep: ['asm', 'gl-matrix'], f:  linkSharedObj},
+	{dep: ['asm', 'gl-matrix', 'render'], f: initRenderLoop}];
 
 function LoadedDep(dep) {
 	dependencies[dep].loaded = true;
@@ -54,9 +63,15 @@ function LodaedASM() {
 	// function mapping
 	wasmFn.loadMatrix = Module.cwrap('loadMatrix', null, ['number']);
 	wasmFn.GetPtr = Module.cwrap('GetPtr', 'number', ['number']);
+	wasmFn.Update = Module.cwrap('Update', 'number', null);
 
 	LoadedDep('asm');
 }
+
+function initRenderLoop() {
+	buildScene(gl);
+}
+
 // setup webasm
 var Module = {
 	onRuntimeInitialized: function(){LodaedASM();}	
@@ -90,8 +105,9 @@ if (!window.cancelAnimationFrame)
       clearTimeout(id);
 };
 		</script>
-		<script async onload="LoadedDep('gl-matrix')" src='gl-matrix.js'></script>
-		<script async onload="LoadedDep('render')" src='render.js'></script>
+		<script async type="text/javascript" onload="LoadedDep('gl-matrix')" src='gl-matrix.js'></script>
+		<script async type="text/javascript" onload="LoadedDep('render')" src='render.js'></script>
+		<script async type="text/javascript" onload="LoadedDep('bridge')" src="bridge.js"></script>
 		<script async src='wasmLoader.js'></script>
 	</body>
 </html>

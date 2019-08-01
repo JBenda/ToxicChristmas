@@ -73,7 +73,14 @@ function linkSharedObj() {
 	
 	input.data = sharedObjects.input.data;
 }
+function spriteTest() {
+	const sheet = SpriteSheet('test,2,2');
+	sheet.AddAnimation('ani1',[[0,0],[0,1]]);
+	console.log(sheet);
+	console.log(sheet.animations.ani1.textData());
+}
 const loadCallBacks = [
+	{dep: ['bridge'], f: spriteTest},
 	{dep: ['asm', 'gl-matrix'], f:  linkSharedObj},
 	{dep: ['asm', 'gl-matrix', 'render'], f: initRenderLoop}];
 
@@ -94,7 +101,8 @@ function LodaedASM() {
 }
 
 function initRenderLoop() {
-	buildScene(gl);
+	const scene = buildScene(gl);
+
 }
 
 // setup webasm

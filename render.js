@@ -117,7 +117,8 @@ function buildScene(gl) {
 	setupClear(gl, undefined, [0.2, 0.3, 0.2, 1], 1.1);
 	const drawCalls = {
 		gl,
-		vanilla: prog
+		vanilla: prog,
+		player: createPlayer(gl)
 	};
 }
 

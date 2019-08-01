@@ -25,6 +25,7 @@ private:
 	unsigned int m_lvl;
 
 	void LoadRotine(unsigned int _num) {
+		// TOOD:
 		m_modus = Modie::Run;
 	};
 };

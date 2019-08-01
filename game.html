@@ -5,8 +5,33 @@
 		<style>html,body{height: 100%; margin: 0; background-color}</style>
 	</head>
 	<body>
-		<canvas id="glFrame"></canvas>
+		<canvas height="480" width="640" id="glFrame"></canvas>
 		<script type="text/javascript"> 
+function placeCenter(node) {
+	const mH = (window.innerWidth - node.width) / 2;
+	const mV = (window.innerHeight - node.height) / 2;
+	if(node.width > window.innerWidth || node.height > window.innerHeight) srceenToSmall();
+	else canvasFitInSrceen();
+	node.style.marginLeft = mH;
+	node.style.marginTop = mV;
+}
+window.addEventListener("resize", function(){placeCenter(document.getElementById('glFrame'));});
+placeCenter(document.getElementById('glFrame'));
+
+var srceeDimensionMismatch = false;
+function canvasFitInSrceen() {
+	if (srceeDimensionMismatch) {
+		console.debug('srceen now has valid size');
+		srceeDimensionMismatch = false;
+	}
+}
+function srceenToSmall() {
+	if (!srceeDimensionMismatch) {
+		alert('Viewport is to small to display game porperly.');
+		srceeDimensionMismatch = true; 
+	}
+}
+
 // setup dependencies
 const dependencies = {
 	['gl-matrix']: {loaded: null},

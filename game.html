@@ -1,0 +1,158 @@
+<html>
+	<head>
+		<meta charset="UTF-8" />
+		<title>Stop the Toxic</title>>
+		<style>html,body{height: 100%; margin: 0; background-color: black}</style>
+		<script type="text/javascript" src="webgl-debug.js"></script>
+		<script type="text/javascript" src='gl-matrix.js'></script>
+	</head>
+	<body>
+		<canvas height="480" width="640" id="glFrame"></canvas>
+		<div style="display=none" id="devNull"></div>
+		<script type="module">
+import {createPlayer, buildScene} from './render.js';
+import SpriteSheet from './SpriteSheet.js';
+
+const devNull = document.getElementById("devNull"); 
+function placeCenter(node) {
+	const mH = (window.innerWidth - node.width) / 2;
+	const mV = (window.innerHeight - node.height) / 2;
+	if(node.width > window.innerWidth || node.height > window.innerHeight) srceenToSmall();
+	else canvasFitInSrceen();
+	node.style.marginLeft = mH;
+	node.style.marginTop = mV;
+}
+const canvas = document.getElementById('glFrame');
+window.addEventListener("resize", function(){placeCenter(canvas);});
+placeCenter(canvas);
+
+var srceeDimensionMismatch = false;
+function canvasFitInSrceen() {
+	if (srceeDimensionMismatch) {
+		console.debug('srceen now has valid size');
+		srceeDimensionMismatch = false;
+	}
+}
+function srceenToSmall() {
+	if (!srceeDimensionMismatch) {
+		alert('Viewport is to small to display game porperly.');
+		srceeDimensionMismatch = true; 
+	}
+}
+
+// setup dependencies
+const dependencies = {
+	['asm']: {loaded: null},
+};
+
+const matrices = {
+	playerView: undefined,
+	gameView: undefined
+};
+
+const loadCallBacks = [
+	{dep: ['asm'], f: startGame}];
+
+function LoadedDep(dep) {
+	dependencies[dep].loaded = true;
+	loadCallBacks.filter(function(el) {
+		return  !!!el.dep  || (el.dep.includes(dep) && el.dep.every(function(d) {return dependencies[d].loaded;}));})
+		.forEach(function(el) {el.f();});
+}
+const wasmFn = {};
+function LodaedASM() {
+	// function mapping
+	// wasmFn.loadMatrix = Module.cwrap('loadMatrix', null, ['number']);	
+	LoadedDep('asm');
+}
+
+const sharedObj = {
+	frameCounter: new Uint8Array([0]),
+};
+
+const game = {};
+function initRenderLoop() {
+	console.debug("init also start");
+	game.scene = buildScene(gl);
+	game.player = createPlayer(gl, new SpriteSheet(
+		gl,
+		document.getElementById('runner'),
+		150, 146));
+	const view = mat4.create();
+	const proj = mat4.create();
+	mat4.fromScaling(view, [0.3, 0.3, 1]);
+	mat4.translate(view, view, [1, 0.5, 0]);
+	
+	const ratio = canvas.width / canvas.height;
+	mat4.ortho(proj, -ratio, ratio, 1, -1, -1, 1);
+	game.camera = {proj};
+
+	game.player.SetViewMatrix(view);
+	game.player.frame = sharedObj.frameCounter;
+	window.requestAnimationFrame(update);
+}
+
+function startGame() {}
+
+var lT = null;
+var frameTime = 0.03;
+var fraemTimer = 0;
+function update() {
+	const t = new Date().getTime() / 1000.0;
+	if (lT !== null ) {
+		const dt = t - lT;
+		fraemTimer += dt;
+		if (fraemTimer > frameTime) {
+			fraemTimer = 0;
+			if (sharedObj.frameCounter[0] === 23) {
+				sharedObj.frameCounter[0] = 0;
+			}
+			else sharedObj.frameCounter[0] += 1;
+		}
+	}
+	lT = t;
+	game.scene.clear();
+	game.player.draw(game);
+	window.requestAnimationFrame(update);
+}
+
+// setup webasm
+var Module = {
+	onRuntimeInitialized: function(){LodaedASM();}	
+};
+
+// load gl context
+const gl = WebGLDebugUtils.makeDebugContext(canvas.getContext('webgl'));
+if(!!!gl) {
+	alert('critial error: no webGl support, or data Corruption');
+}
+
+// setup refresh loop
+var vendors = ['webkit', 'moz'];
+for(var x = 0; x < vendors.length && !window.requestAnimationFrame; ++x) {
+    window.requestAnimationFrame = window[vendors[x]+'RequestAnimationFrame'];
+    window.cancelAnimationFrame =
+      window[vendors[x]+'CancelAnimationFrame'] || window[vendors[x]+'CancelRequestAnimationFrame'];
+}
+if (!window.requestAnimationFrame)
+    window.requestAnimationFrame = function(callback, element) {
+        var currTime = new Date().getTime();
+        var timeToCall = Math.max(0, 16 - (currTime - lastTime));
+        var id = window.setTimeout(function() { callback(currTime + timeToCall); },
+          timeToCall);
+        lastTime = currTime + timeToCall;
+        return id;
+};
+
+if (!window.cancelAnimationFrame)
+    window.cancelAnimationFrame = function(id) {
+      clearTimeout(id);
+};
+
+initRenderLoop();
+		</script>
+		<div style="display:none">
+			<img src="assets/runner.png" id="runner" />
+		</div>
+	</body>
+</html>

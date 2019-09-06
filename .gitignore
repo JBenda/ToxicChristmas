@@ -1,3 +1,4 @@
 *.wasm
 *.swp
-
+.vscode/
+wasmLoader.js

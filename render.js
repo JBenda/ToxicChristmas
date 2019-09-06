@@ -1,5 +1,3 @@
-// import SpriteSheet from 'spriteSheet.js';
-
 class Scene{
     constructor (context) {
         this.gl = context;
@@ -215,12 +213,11 @@ class Player {
 
         this.gl.activeTexture(this.gl.TEXTURE0);
         this.gl.uniform1i(this.pipe.uniLoc.sampler, 0);
+        this.gl.bindTexture(this.gl.TEXTURE_2D, this.spriteSheet.tex);
+        this.spriteSheet.bindVertexPointerForSprite(this.pipe.attrLoc.uv, this.frame[0]);
 
         this.gl.uniformMatrix4fv(this.pipe.uniLoc.mView, false, this.mView);
         this.gl.uniformMatrix4fv(this.pipe.uniLoc.mProj, false, game.camera.proj);
-
-        this.gl.bindTexture(this.gl.TEXTURE_2D, this.spriteSheet.tex);
-        this.spriteSheet.bindVertexPointerForSprite(this.pipe.attrLoc.uv, this.frame[0]);
 
         this.buffer.pos.bindAttribPointer(this.pipe.attrLoc.pos, 2, false, 0);
         

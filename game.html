@@ -8,7 +8,7 @@
 	</head>
 	<body>
 		<canvas height="480" width="640" id="glFrame"></canvas>
-		<div style="display=none" id="devNull"></div>
+		<div style="display:none" id="devNull"></div>
 		<script type="module">
 import {createPlayer, buildScene} from './render.js';
 import SpriteSheet from './SpriteSheet.js';
@@ -66,12 +66,8 @@ function LodaedASM() {
 	LoadedDep('asm');
 }
 
-const sharedObj = {
-	frameCounter: new Uint8Array([0]),
-};
-
 const game = {};
-function initRenderLoop() {
+window.initRenderLoop = function initRenderLoop() {
 	console.debug("init also start");
 	game.scene = buildScene(gl);
 	game.player = createPlayer(gl, new SpriteSheet(
@@ -88,38 +84,18 @@ function initRenderLoop() {
 	game.camera = {proj};
 
 	game.player.SetViewMatrix(view);
-	game.player.frame = sharedObj.frameCounter;
+	game.player.frame = window.shared.player_frameCount.data;
 	window.requestAnimationFrame(update);
 }
 
 function startGame() {}
 
-var lT = null;
-var frameTime = 0.03;
-var fraemTimer = 0;
 function update() {
-	const t = new Date().getTime() / 1000.0;
-	if (lT !== null ) {
-		const dt = t - lT;
-		fraemTimer += dt;
-		if (fraemTimer > frameTime) {
-			fraemTimer = 0;
-			if (sharedObj.frameCounter[0] === 23) {
-				sharedObj.frameCounter[0] = 0;
-			}
-			else sharedObj.frameCounter[0] += 1;
-		}
-	}
-	lT = t;
+	window.wasmFn.Update();
 	game.scene.clear();
 	game.player.draw(game);
 	window.requestAnimationFrame(update);
 }
-
-// setup webasm
-var Module = {
-	onRuntimeInitialized: function(){LodaedASM();}	
-};
 
 // load gl context
 const gl = WebGLDebugUtils.makeDebugContext(canvas.getContext('webgl'));
@@ -165,11 +141,59 @@ export function LoadedRescource(_name) {
 // initRenderLoop();
 		</script>
 		<script type="text/javascript">
-			var 
-			function BindASM() {
-
+			class Shared {
+				constructor(size, type) {
+					this.size = size;
+					this.type = type;
+				}
+				bind(ptr) {
+					this.data = new this.type(Module.HEAP8.buffer, ptr, this.size);
+				}
+			};
+			class INumber extends Shared {
+				constructor(length) {
+					super(length !== undefined ? length : 1, Uint32Array);
+				}
+				get(i) {
+					return this.data[i !== undefined ? i : 0];
+				}
 			}
+			window.wasmFn = {};
+			window.shared = {
+				player_frameCount: new INumber(),
+			};
+			function BindASM() {
+				console.log("start binding");
+				wasmFn.GetSharedPointer = Module.cwrap('GetSharedPointer', 'number', null);
+				wasmFn.SharedPointerLength = Module.cwrap('SharedPointerLength', 'number', null);
+				wasmFn.Update = Module.cwrap('Update', null, null);
+				BindShared();
+			}
+			function BindShared() {
+				const l = wasmFn.SharedPointerLength()
+				const entrys = new Uint32Array(Module.HEAP8.buffer, wasmFn.GetSharedPointer(), l * 2);
+				for(var i = 0; i < l; i++) {
+					var name = "";
+					var pStr = entrys[i * 2];
+					const pP = entrys[i * 2 + 1];
+					var c = 0;
+					while(Module.HEAP8[pStr] !== 0) {
+						const s = String.fromCharCode(Module.HEAP8[pStr])
+						name += s;
+						pStr++;
+						if (c++ > 40) break;
+					}
+					shared[name].bind(Module.HEAPU32[pP / 4]); // TODO clean
+				}
+				console.log("finishd Binding");
+				initRenderLoop();
+			}
+			// setup webasm
+		var Module = {
+			// onRuntimeInitialized: function(){BindASM();}	
+		};
 		</script>
+		<script type="text/javascript" src="wasmLoader.js"></script>
 		<div style="display:none">
 			<img src="assets/runner.png" id="runner"/>
 		</div>

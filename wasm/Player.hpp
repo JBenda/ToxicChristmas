@@ -8,6 +8,7 @@
 #include <glm/vec2.hpp>
 #include <glm/mat4x4.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 
 class Player : Collider {
     unsigned int m_spriteId;
@@ -22,7 +23,14 @@ public:
     void Update(float _dT, const Input& _input) {
         m_animation.Update(_dT);
         m_spriteId = m_animation.GetSpireId();
+        
+        Physics(_dT);
+        m_mView = glm::translate(glm::mat4(1), glm::vec3(m_pos, 0));
+
+        m_vel.x = 0;
+        if(_input.KeyDown(Input::Inputs::Right)) m_vel.x += 3;
+        if(_input.KeyDown(Input::Inputs::Left)) m_vel.x += -3;
     }
-    unsigned int* GetSpriteIdPtr() { return &m_spriteId; }
-    float* GetMViewPtr() { return glm::value_ptr(m_mView);}
+    const unsigned int* GetSpriteIdPtr() const { return &m_spriteId; }
+    const float* GetMViewPtr() const { return glm::value_ptr(m_mView);}
 };

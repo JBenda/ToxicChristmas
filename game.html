@@ -7,13 +7,20 @@
 		<script type="text/javascript" src='gl-matrix.js'></script>
 	</head>
 	<body>
-		<canvas height="480" width="640" id="glFrame"></canvas>
+		<canvas tabindex="0" height="480px" width="640px" id="glFrame"></canvas>
 		<div style="display:none" id="devNull"></div>
 		<script type="module">
 import {createPlayer, buildScene} from './render.js';
 import SpriteSheet from './SpriteSheet.js';
 
+const game = { state: 'preRun'};
+const PreRun = 'preRun';
+const Initelized = 'initelized';
+const Run = 'run';
+const Suspand = 'suspand';
+
 const devNull = document.getElementById("devNull"); 
+var srceeDimensionMismatch = false;
 function placeCenter(node) {
 	const mH = (window.innerWidth - node.width) / 2;
 	const mV = (window.innerHeight - node.height) / 2;
@@ -21,54 +28,37 @@ function placeCenter(node) {
 	else canvasFitInSrceen();
 	node.style.marginLeft = mH;
 	node.style.marginTop = mV;
+	draw();
 }
 const canvas = document.getElementById('glFrame');
 window.addEventListener("resize", function(){placeCenter(canvas);});
 placeCenter(canvas);
 
-var srceeDimensionMismatch = false;
 function canvasFitInSrceen() {
 	if (srceeDimensionMismatch) {
 		console.debug('srceen now has valid size');
 		srceeDimensionMismatch = false;
+		startGame();
 	}
 }
 function srceenToSmall() {
 	if (!srceeDimensionMismatch) {
-		alert('Viewport is to small to display game porperly.');
 		srceeDimensionMismatch = true; 
+		alert('Viewport is to small to display game porperly.');
+		pauseGame();
 	}
 }
 
-// setup dependencies
-const dependencies = {
-	['asm']: {loaded: null},
-};
 
-const matrices = {
-	playerView: undefined,
-	gameView: undefined
-};
+function bindInputs(obj) {
+	canvas.addEventListener('keydown', function(e) {obj.keydown(e);});
+	canvas.addEventListener('keyup', function(e) {obj.keyup(e);});
+} 
 
-const loadCallBacks = [
-	{dep: ['asm'], f: startGame}];
-
-function LoadedDep(dep) {
-	dependencies[dep].loaded = true;
-	loadCallBacks.filter(function(el) {
-		return  !!!el.dep  || (el.dep.includes(dep) && el.dep.every(function(d) {return dependencies[d].loaded;}));})
-		.forEach(function(el) {el.f();});
-}
-const wasmFn = {};
-function LodaedASM() {
-	// function mapping
-	// wasmFn.loadMatrix = Module.cwrap('loadMatrix', null, ['number']);	
-	LoadedDep('asm');
-}
-
-const game = {};
 window.initRenderLoop = function() {
 	console.debug("init also start");
+	bindInputs(window.shared.input);
+
 	game.scene = buildScene(gl);
 	game.player = createPlayer(gl, new SpriteSheet(
 		gl,
@@ -86,16 +76,52 @@ window.initRenderLoop = function() {
 
 	game.player.SetViewMatrix(window.shared.player_mView.data);
 	game.player.frame = window.shared.player_frameCount.data;
-	window.requestAnimationFrame(update);
+	canvas.focus();
+	canvas.addEventListener('blur', pauseGame);
+	canvas.addEventListener('focus', continueGame);
+
+	game.state = Initelized;
+
+	startGame();
 }
 
-function startGame() {}
+function checkConditions() {
+	if(srceeDimensionMismatch || !document.hasFocus() || !document.activeElement === canvas) {
+		return false;
+	}
+	return true;
+}
+
+function startGame() {
+	draw();
+	if (!checkConditions()) return;
+	game.state = Run;
+	game.nextFrame = window.requestAnimationFrame(update);
+}
+function pauseGame() {
+	if(game.state !== Run) return;
+	game.state = Suspand;
+}
+function continueGame() {
+	if(!checkConditions()) return;
+	game.nextFrame = window.requestAnimationFrame(update);
+	game.state = Run;
+}
 
 function update() {
-	window.wasmFn.Update();
-	game.scene.clear();
-	game.player.draw(game);
-	window.requestAnimationFrame(update);
+	if(game.state === Run) {
+		window.shared.input.write();
+		window.wasmFn.Update();
+		draw();	
+		game.nextFrame = window.requestAnimationFrame(update);
+	}
+}
+
+function draw() {
+	if (game.state !== PreRun) {
+		game.scene.clear();
+		game.player.draw(game);
+	}
 }
 
 // load gl context
@@ -167,16 +193,68 @@ export function LoadedRescource(_name) {
 					return this.data;
 				}
 			}
+			class Inputs extends Shared {
+				constructor() {
+					super(0, Uint8Array);
+				}
+				bind(ptr) {
+					console.log("bind input");
+					var itr = wasmFn.GetInputTitels();
+					var key;
+					this.keys = [];
+					var c = 0;
+					do {
+						key = "";
+						while(Module.HEAP8[itr] !== 0) {
+							if(c++ > 250) { throw "don't find end of intput titels"}
+							key += String.fromCharCode(Module.HEAP8[itr]);
+							itr++;
+						}
+						this.keys.push(key);
+						itr ++;
+					} while(Module.HEAP8[itr] !== 0);
+					this.size = this.keys.length;
+					const obj = this;
+					this.keys.forEach(function(k) { obj[k] = 0; });
+					super.bind(ptr);
+				}
+				write() {
+					const obj = this;
+					this.keys.forEach(function (val, i) {
+						obj.data[i] = obj[val];
+					});
+				}
+				handleKey(e, val) {
+					if(e.code === 'KeyW' || e.code === 'ArrowUp')
+						this.Up = val;
+					else if(e.code === 'KeyS' || e.code === 'ArrowDown')
+						this.Down = val;
+					else if(e.code === 'KeyA' || e.code === 'ArrowLeft')
+						this.Left = val;
+					else if(e.code === 'KeyD' || e.code === 'ArrowRight') {
+						this.Right = val;
+					}
+				}
+				keydown(e) {
+					this.handleKey(e, 1);
+				}
+				keyup(e) {
+					this.handleKey(e, 0);
+				}
+			}
 			window.wasmFn = {};
 			window.shared = {
 				player_frameCount: new INumber(),
 				player_mView: new  Matrix(),
+				input: new Inputs(),
 			};
 			function BindASM() {
 				console.log("start binding");
 				wasmFn.GetSharedPointer = Module.cwrap('GetSharedPointer', 'number', null);
 				wasmFn.SharedPointerLength = Module.cwrap('SharedPointerLength', 'number', null);
 				wasmFn.Update = Module.cwrap('Update', null, null);
+				wasmFn.GetInputTitels = Module.cwrap('GetInputTitels', 'number', null);
+				wasmFn.Pause = Module.cwrap('Pause', null, null);
 				BindShared();
 			}
 			function BindShared() {

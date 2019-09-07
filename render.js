@@ -200,8 +200,6 @@ class Player {
         
         // this.sprite = loadTextureFromImg(this.gl, document.getElementById('runner'));//loadTexture(gl, "assets/runner.jpg");
         this.spriteSheet = _spriteSheet;
-
-        this.mView = mat4.create();
     }
     SetViewMatrix(mat) {
         this.mView = mat;

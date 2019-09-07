@@ -80,10 +80,11 @@ window.initRenderLoop = function() {
 	mat4.translate(view, view, [1, 0.5, 0]);
 	
 	const ratio = canvas.width / canvas.height;
-	mat4.ortho(proj, -ratio, ratio, 1, -1, -1, 1);
+	const heightInTiles = 5;
+	mat4.ortho(proj, -ratio * heightInTiles, ratio * heightInTiles, heightInTiles, -heightInTiles, -1, 1);
 	game.camera = {proj};
 
-	game.player.SetViewMatrix(view);
+	game.player.SetViewMatrix(window.shared.player_mView.data);
 	game.player.frame = window.shared.player_frameCount.data;
 	window.requestAnimationFrame(update);
 }
@@ -158,9 +159,18 @@ export function LoadedRescource(_name) {
 					return this.data[i !== undefined ? i : 0];
 				}
 			}
+			class Matrix extends Shared {
+				constructor() {
+					super(16, Float32Array);
+				}
+				get() {
+					return this.data;
+				}
+			}
 			window.wasmFn = {};
 			window.shared = {
 				player_frameCount: new INumber(),
+				player_mView: new  Matrix(),
 			};
 			function BindASM() {
 				console.log("start binding");

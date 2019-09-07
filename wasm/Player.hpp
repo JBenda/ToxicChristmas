@@ -6,14 +6,17 @@
 #include "Input.hpp"
 
 #include <glm/vec2.hpp>
+#include <glm/mat4x4.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 class Player : Collider {
     unsigned int m_spriteId;
     enum struct Moves { run, LAST };
     Animation<Moves> m_animation;
     static constexpr unsigned int MoveFrames[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13};
+    glm::mat4 m_mView;
 public:
-    Player() : Collider(glm::vec2(1)),  m_animation(){
+    Player() : Collider(glm::vec2(1)),  m_animation(), m_mView(1){
         m_animation.DefineClip(Moves::run, MoveFrames, sizeof(MoveFrames) / sizeof(*MoveFrames), 0.03f);
     }
     void Update(float _dT, const Input& _input) {
@@ -21,4 +24,5 @@ public:
         m_spriteId = m_animation.GetSpireId();
     }
     unsigned int* GetSpriteIdPtr() { return &m_spriteId; }
+    float* GetMViewPtr() { return glm::value_ptr(m_mView);}
 };

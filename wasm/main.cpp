@@ -12,6 +12,7 @@ Player player{};
 
 int main() {
     shared::player_frameCount = player.GetSpriteIdPtr();
+    shared::player_mView = player.GetMViewPtr();
     emscripten_run_script("BindASM();");
     return 0;
 }

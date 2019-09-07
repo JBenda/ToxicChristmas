@@ -67,7 +67,7 @@ function LodaedASM() {
 }
 
 const game = {};
-window.initRenderLoop = function initRenderLoop() {
+window.initRenderLoop = function() {
 	console.debug("init also start");
 	game.scene = buildScene(gl);
 	game.player = createPlayer(gl, new SpriteSheet(

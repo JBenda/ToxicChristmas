@@ -1,19 +1,17 @@
 #include <emscripten.h>
-#include <iostream>
 #include <chrono>
+
 #include "shared.hpp"
+#include "Player.hpp"
+#include "Input.hpp"
 
-
-unsigned int frameCount = 20;
-constexpr unsigned int amtFrame = 23;
-constexpr double frameTime = 0.03;
-double frameTimer = 0;
-
-bool first = false;
+bool first = true;
 std::chrono::time_point<std::chrono::system_clock> last{};
 
+Player player{};
+
 int main() {
-    shared::player_frameCount = &frameCount;
+    shared::player_frameCount = player.GetSpriteIdPtr();
     emscripten_run_script("BindASM();");
     return 0;
 }
@@ -33,14 +31,9 @@ extern "C" {
     void Update() {
         auto now = std::chrono::system_clock::now();
         if(!first) {
-            std::chrono::duration<double> d = now - last;
-            double dT = d.count();
-            frameTimer += dT;
-            if (frameTimer > frameTime) {
-                frameTimer = 0;
-                if(++frameCount == amtFrame)
-                    frameCount = 0;
-            }
+            std::chrono::duration<float> d = now - last;
+            float dT = d.count();
+            player.Update(dT, Input());
         } else { first = false; }
         last = now;
     }

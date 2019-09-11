@@ -12,12 +12,18 @@ export default class SpriteSheet {
         this.h = Math.floor(img.height / h);
         this.img = img;
 
+        this.spriteW = w / img.width;
+        this.spriteH = h / img.height;
+        const sw = this.spriteW;
+        const sh = this.spriteH;
+
         function toUVW(n) {
-            return n * w / img.width;
+            return n * sw;
         }
         function toUVH(n) {
-            return n * h / img.height;
+            return n * sh;
         }
+
         this.uvs = new Array(this.h * this.w * 4 * 2);
         var pos = 0;
         for(var y = 0; y < this.h; y++) {
@@ -34,6 +40,10 @@ export default class SpriteSheet {
         }
 
         this.buffer = new Buffer(gl, this.uvs, Float32Array, gl.ARRAY_BUFFER, gl.STATIC_DRAW);
+    }
+    getUVS(x,y) {
+        const id = y === undefined ? x : y * this.w + x;
+        return this.uvs.slice(id * 8, id * 8 + 6).concat(this.uvs.slice(id*8 + 2, id*8+8));
     }
     spriteOffset(x,y) {
         var id = x;

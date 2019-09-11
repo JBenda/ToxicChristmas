@@ -10,8 +10,9 @@
 		<canvas tabindex="0" height="480px" width="640px" id="glFrame"></canvas>
 		<div style="display:none" id="devNull"></div>
 		<script type="module">
-import {createPlayer, buildScene} from './render.js';
+import { createPlayer, buildScene } from './render.js';
 import SpriteSheet from './SpriteSheet.js';
+import { createStaticObjects } from './staticObjects.js';
 
 const game = { state: 'preRun'};
 const PreRun = 'preRun';
@@ -60,10 +61,16 @@ window.initRenderLoop = function() {
 	bindInputs(window.shared.input);
 
 	game.scene = buildScene(gl);
-	game.player = createPlayer(gl, new SpriteSheet(
+	const runnerSheet = new SpriteSheet(
 		gl,
 		document.getElementById('runner'),
-		150, 146));
+		150, 146);
+	const objectSheet = new SpriteSheet(
+		gl,
+		document.getElementById('boom'),
+		256, 249
+	);
+	game.player = createPlayer(gl, runnerSheet);
 	const view = mat4.create();
 	const proj = mat4.create();
 	mat4.fromScaling(view, [0.3, 0.3, 1]);
@@ -76,13 +83,22 @@ window.initRenderLoop = function() {
 
 	game.player.SetViewMatrix(window.shared.player_mView.data);
 	game.player.frame = window.shared.player_frameCount.data;
+
+	game.staticObjects = createStaticObjects(gl, objectSheet, wasmFn, Module.HEAP8.buffer);
+
 	canvas.focus();
 	canvas.addEventListener('blur', pauseGame);
 	canvas.addEventListener('focus', continueGame);
 
 	game.state = Initelized;
 
+	game.time = {};
+
 	startGame();
+}
+
+function updateTime(obj) {
+	obj.s = new Date().getTime() / 1000.0;
 }
 
 function checkConditions() {
@@ -119,13 +135,15 @@ function update() {
 
 function draw() {
 	if (game.state !== PreRun) {
+		updateTime(game.time);
 		game.scene.clear();
 		game.player.draw(game);
+		game.staticObjects.draw(game);
 	}
 }
 
 // load gl context
-const gl = WebGLDebugUtils.makeDebugContext(canvas.getContext('webgl'));
+const gl = WebGLDebugUtils.makeDebugContext(canvas.getContext('webgl2'));
 if(!!!gl) {
 	alert('critial error: no webGl support, or data Corruption');
 }
@@ -255,6 +273,10 @@ export function LoadedRescource(_name) {
 				wasmFn.Update = Module.cwrap('Update', null, null);
 				wasmFn.GetInputTitels = Module.cwrap('GetInputTitels', 'number', null);
 				wasmFn.Pause = Module.cwrap('Pause', null, null);
+				wasmFn.staticObjectsNumber = Module.cwrap('staticObjectsNumber', 'number', null);
+				wasmFn.staticObjectsSpriteIds = Module.cwrap('staticObjectsSpriteIds', 'number', null);
+				wasmFn.staticObjectsAnimation = Module.cwrap('staticObjectsAnimation', 'number', null);
+				wasmFn.staticObjectsPos = Module.cwrap('staticObjectsPos', 'number', null);
 				BindShared();
 			}
 			function BindShared() {
@@ -274,7 +296,7 @@ export function LoadedRescource(_name) {
 					shared[name].bind(Module.HEAPU32[pP / 4]); // TODO clean
 				}
 				console.log("finishd Binding");
-				initRenderLoop();
+				window.initRenderLoop();
 			}
 			// setup webasm
 		var Module = {
@@ -284,6 +306,7 @@ export function LoadedRescource(_name) {
 		<script type="text/javascript" src="wasmLoader.js"></script>
 		<div style="display:none">
 			<img src="assets/runner.png" id="runner"/>
+			<img src="assets/boom.png" id="boom" />
 		</div>
 	</body>
 </html>

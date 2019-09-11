@@ -94,7 +94,7 @@ function loadShader(gl, _type, _code) {
     return shader;
 }
 
-function loadProgram(gl, _vsC, _fsC) {
+export function loadProgram(gl, _vsC, _fsC) {
     const vs = loadShader(gl, gl.VERTEX_SHADER, _vsC);
     const fs = loadShader(gl, gl.FRAGMENT_SHADER, _fsC);
 
@@ -173,6 +173,12 @@ export class Buffer {
         this.gl.bufferData(this.bufferType,
             new this.dataType(data),
             this.drawType);
+    }
+    loadFromHeap(array) {
+        this.gl.bindBuffer(this.bufferType, this.buffer);
+        this.gl.bufferData(this.bufferType,
+                array,
+                this.drawType, );
     }
     bindAttribPointer(attrLoc, size, normelized, offset) {
         this.gl.bindBuffer(this.bufferType, this.buffer);

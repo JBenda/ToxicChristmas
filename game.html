@@ -84,7 +84,7 @@ window.initRenderLoop = function() {
 	game.player.SetViewMatrix(window.shared.player_mView.data);
 	game.player.frame = window.shared.player_frameCount.data;
 
-	game.staticObjects = createStaticObjects(gl, objectSheet, wasmFn, Module.HEAP8.buffer);
+	game.staticObjects = createStaticObjects(gl, runnerSheet, wasmFn, Module.HEAP8.buffer);
 
 	canvas.focus();
 	canvas.addEventListener('blur', pauseGame);

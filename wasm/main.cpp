@@ -73,7 +73,8 @@ extern "C" {
 
     EMSCRIPTEN_KEEPALIVE
     const float* staticObjectsAnimation() {
-        static constexpr float ani[] = {0.1, 0, 15, 0.1, 0.5, 15};
+        // frame time, frames, offset (<1)
+        static constexpr float ani[] = {0.1,4,0, 0.1,4,0.5};
         return ani;
     }
 };

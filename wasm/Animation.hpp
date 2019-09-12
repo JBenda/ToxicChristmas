@@ -10,10 +10,10 @@
 template<typename T>
 class Animation {
     struct Clip{
-        Clip(const unsigned int* frames, float frameTime) : 
+        Clip(const unsigned int* frames, float frameTime, unsigned int length) : 
             frameTime{frameTime},
             frames{frames}, 
-            length{sizeof(frames) / sizeof(*frames)} {}
+            length{length} {}
         float frameTime;
         const unsigned int* frames;
         unsigned int length;

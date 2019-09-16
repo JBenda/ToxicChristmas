@@ -24,7 +24,7 @@ public:
         m_animation.Update(_dT);
         m_spriteId = m_animation.GetSpireId();
         
-        Physics(_dT);
+        Move(_dT);
         m_mView = glm::translate(glm::mat4(1), glm::vec3(m_pos, 0));
 
         m_vel.x = 0;

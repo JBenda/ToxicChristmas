@@ -23,7 +23,8 @@ int main() {
         glm::vec2(0, 0),
         Utillity::Rect(glm::vec2(3, 0), glm::vec2(1, 1))
     );
-    lvl->statics.push_back(new Box(glm::vec2(0, 0)));
+    lvl->statics.push_back(new Box({0, 2}));
+    lvl->statics.push_back(new Box(glm::vec2(4, 0)));
     
     world.LoadLevel(lvl);
 
@@ -64,7 +65,7 @@ extern "C" {
             const Input input(lastInput, activeInput);
             std::chrono::duration<float> d = now - last;
             float dT = d.count();
-            player.Update(dT, input);
+            player.Update(dT, input, world);
         } else { first = false; }
         last = now;
         lastInput = activeInput;
@@ -72,6 +73,7 @@ extern "C" {
 
     EMSCRIPTEN_KEEPALIVE
     unsigned int staticObjectsNumber() {
+        std::cout << "obj count: " << world.GetStaticObjects().size() << '\n';
         return world.GetStaticObjects().size();
     }
 
@@ -103,7 +105,7 @@ extern "C" {
             sids = new unsigned int[objs.size()];
             unsigned int* uiItr = sids;
             for(const StaticObject* o : objs) {
-                *(++sids) = o->spriteId;
+                *(uiItr++) = o->spriteId + 1;
             }
         }
         return sids;
@@ -120,9 +122,9 @@ extern "C" {
             ani = new float[objs.size() * 3];
             float* fItr = ani;
             for(const StaticObject* o : objs) {
-                *(++fItr) = o->frameTime;
-                *(++fItr) = o->frames;
-                *(++fItr) = o->offset;
+                *(fItr++) = o->frameTime;
+                *(fItr++) = o->frames;
+                *(fItr++) = o->offset;
             }
         }
         return ani;

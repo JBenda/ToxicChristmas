@@ -122,8 +122,6 @@ class StaticObjects {
             }
         )
         this.buffer.animation.set(anim);
-        console.log("staticObj: " + this.count);
-        console.log(p);
         return this;
     }
 };

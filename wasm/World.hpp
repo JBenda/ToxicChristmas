@@ -4,6 +4,7 @@
 #include "Object.hpp"
 #include <memory>
 #include <vector>
+#include <optional>
 
 struct Level {
     Level(const glm::vec2& _start, const Utillity::Rect& _target) : start{_start}, target{_target}{}
@@ -24,47 +25,50 @@ public:
         m_level = _level;
         unsigned int size = m_level->statics.size();
     }
-    float MoveH(const Collider& _coll, const glm::vec2& _target) const {
-        glm::vec2 endPos = _coll.GetPos();
-        bool movLR = _target.x > endPos.x;
-        endPos.x = _target.x;
-        
+    std::optional<float> MoveH(const Collider& _coll, const glm::vec2& _target) const {
+        bool movR = _target.x > _coll.GetPos().x;
         m_objBuffer.resize(0);
-        GetColliderInBound(m_level->statics, _coll, endPos, m_objBuffer);
-
-        for(const Object* obj : m_objBuffer) {
-                endPos.x = obj->EndPositionH(_coll, endPos);
+        GetCrossedObj(m_level->statics, _coll, _target, m_objBuffer);
+        if(movR)
+            sort(m_objBuffer.begin(), m_objBuffer.end(), Collider::SortPosHorizontel());
+        else
+            sort(m_objBuffer.begin(), m_objBuffer.end(), Utillity::OrderReverser(Collider::SortPosHorizontel()));
+        for(const Object *o : m_objBuffer) {
+            float x = o->EndPositionH(_coll, _target, movR);
+            if(x != _target.x)
+                return std::optional(x);
         }
-        return endPos.x;
+        return std::optional<float>();
     }
-    float MoveV(const Collider& _coll, const glm::vec2& _target) const {
-        glm::vec2 endPos = _coll.GetPos();
-        endPos.y = _target.y;
-        
+
+    std::optional<float> MoveV(const Collider& _coll, const glm::vec2& _target) const {
+        bool movD = _target.y > _coll.GetPos().y;
         m_objBuffer.resize(0);
-        GetColliderInBound(m_level->statics, _coll, endPos, m_objBuffer);
-        std::cout << m_objBuffer.size() << '\n';
-        for(const Object* obj : m_objBuffer) {
-                endPos.y = obj->EndPositionV(_coll, endPos);
+        GetCrossedObj(m_level->statics, _coll, _target, m_objBuffer);
+        if(movD)
+            sort(m_objBuffer.begin(), m_objBuffer.end(), Collider::SortPosVertical());
+        else
+            sort(m_objBuffer.begin(), m_objBuffer.end(), Utillity::OrderReverser(Collider::SortPosVertical()));
+        
+        for(const Object* o : m_objBuffer) {
+            float y = o->EndPositionV(_coll, _target, movD);
+            if(y != _target.y) {
+                return std::optional(y);
+            }
         }
-        return endPos.y;
+        return std::optional<float>();
     }
 private:
     std::shared_ptr<Level> m_level;
     mutable std::vector<const Object*> m_objBuffer;
 
-    void GetColliderInBound (const std::vector<StaticObject*>& _orderList,
-        const Collider& _coll,
-        const glm::vec2& _target,
-        std::vector<const Object*>& r_out) const {
-        
-        const glm::vec2 diff = 0.5f * (_target - _coll.GetPos());
-        const glm::vec2 size = glm::vec2(fabs(diff.x), fabs(diff.y)) + _coll.GetRad();
-        const Collider hitBox(size, _coll.GetPos() + diff);
-        
-        for(const StaticObject *obj : _orderList) {
-            if(obj->IsIn(hitBox))
-                r_out.push_back(obj);
+    void GetCrossedObj(const std::vector<StaticObject*>& _list, const Collider& _coll, const glm::vec2& _target, std::vector<const Object*>& r_res) const {
+        const glm::vec2 mov = _target - _coll.GetPos();
+        const glm::vec2 mid = (_target + _coll.GetPos()) * 0.5f;
+        Collider hitBox(_coll.GetRad(), _target);
+        for(StaticObject* o : _list) {
+            if(o->IsIn(hitBox))
+                r_res.push_back(o);
         }
     }
  };

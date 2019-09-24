@@ -11,7 +11,9 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
-class Player : Collider {
+#include <optional>
+
+class Player : public Collider {
     unsigned int m_spriteId;
     enum struct Moves { run, LAST };
     Animation<Moves> m_animation;
@@ -20,12 +22,25 @@ class Player : Collider {
 
     void Move(float _dT, const World& _world) {
         m_vel.y += 10.f * _dT;
-        glm::vec2 target = m_pos + m_vel * _dT;
-        m_pos.x = _world.MoveH(*this, target);
-        m_pos.y = _world.MoveV(*this, target);
+        glm::vec2 diff = m_vel * _dT;
+        std::optional<float> res = _world.MoveH(*this, m_pos + glm::vec2(diff.x, 0));
+        if(res) {
+            m_pos.x = res.value();
+            m_vel.x = 0;
+        } else {
+            m_pos.x = m_pos.x + diff.x;
+        }
+
+        res = _world.MoveV(*this, m_pos + glm::vec2(0, diff.y));
+        if(res) {
+            m_pos.y = res.value();
+            m_vel.y = 0;
+        } else {
+            m_pos.y = m_pos.y + diff.y;
+        }
     }
 public:
-    Player() : Collider(glm::vec2(1)),  m_animation(), m_mView(1){
+    Player() : Collider(glm::vec2(0.9f, 0.9f)),  m_animation(), m_mView(1){
         m_animation.DefineClip(Moves::run, MoveFrames, sizeof(MoveFrames) / sizeof(*MoveFrames), 0.03f);
     }
     void Update(float _dT, const Input& _input, World& world) {

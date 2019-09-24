@@ -25,20 +25,19 @@ public:
         glm::vec2 diff = m_pos - _pos;
         diff.x = fabs(diff.x);
         diff.y = fabs(diff.y);
-        if(diff.x > diff.y) {
-            return diff.x <= (m_size.x + _coll.m_size.x);
-        } else {
-            return diff.y <= (m_size.y + _coll.m_size.y);
-        }
+        return diff.x < (m_size.x + _coll.m_size.x)
+            && diff.y < (m_size.y + _coll.m_size.y);
     }
-    static struct  {
-        bool operator()(const Collider *a, const Collider *b) const {
+    struct SortPosVertical{
+        typedef Collider const * Type;
+        bool operator()(const Collider * const a, const Collider * const b) const {
             return a->m_pos.y < b->m_pos.y;
         }
-    } sortPosVertical;
-    static struct {
-       bool operator()(const Collider *a, const Collider *b) const {
+    };
+    struct SortPosHorizontel {
+        typedef Collider const * Type;
+        bool operator()(const Collider *a, const Collider *b) const {
            return a->m_pos.x < b->m_pos.x;
-       } 
-    } sortPosHorizontel;
+        } 
+    };
 };

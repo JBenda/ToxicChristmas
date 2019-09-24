@@ -11,8 +11,8 @@ protected:
     Object(const glm::vec2& size, const glm::vec2& pos)
     : Collider(size, pos){}
 public:
-    virtual float EndPositionH(const Collider& _coll, const glm::vec2& _target) const = 0;
-    virtual float EndPositionV(const Collider& _coll, const glm::vec2& _target) const = 0;
+    virtual float EndPositionH(const Collider& _coll, const glm::vec2& _target, bool movR) const = 0;
+    virtual float EndPositionV(const Collider& _coll, const glm::vec2& _target, bool movD) const = 0;
 };
 
 class StaticObject : public Object {
@@ -36,28 +36,31 @@ public:
         frames = 4;
         offset = 0;
     }
-    float EndPositionH(const Collider& _coll, const glm::vec2& _target) const override {
-        float diff = _target.x - _coll.GetPos().x;
-        if (diff == 0) return _target.x;
-
-        bool movLR = diff > 0;
-        float end = m_pos.x + (movLR ? -1 : 1) * (m_size.x + _coll.GetRad().x + Utillity::epsilon);
-        if(movLR) {
-            return std::min(end, _target.x);
-        }  else {
-            return std::max(end, _target.x);
-        }         
-    }
-    float EndPositionV(const Collider& _coll, const glm::vec2& _target) const override {
-        float diff = _target.y - _coll.GetPos().y;
-        if (diff == 0) return _target.y;
-
-        bool movUD = diff > 0;
-        float end = m_pos.y + (movUD ? -1 : 1) * (m_size.y + _coll.GetRad().y + Utillity::epsilon);
-        if(movUD) {
-            return std::min(end, _target.y);
+    float EndPositionH(const Collider& _coll, const glm::vec2& _target, bool movR) const override {
+        if(movR) {
+            if(m_pos.x - m_size.x - _coll.GetRad().x - Utillity::epsilon < _target.x)
+            return std::min(
+                _target.x,
+                m_pos.x - m_size.x - _coll.GetRad().x - Utillity::epsilon
+            );
         } else {
-            return std::max(end, _target.y);
+            return std::max(
+                _target.x,
+                m_pos.x + m_size.x + _coll.GetRad().x + Utillity::epsilon
+            );
         }
+    }
+    float EndPositionV(const Collider& _coll, const glm::vec2& _target, bool movD) const override {
+         if(movD) {
+             return std::min(
+                 _target.y,
+                 m_pos.y - m_size.y - _coll.GetRad().y - Utillity::epsilon
+             );
+         } else {
+             return std::max(
+                 _target.y,
+                 m_pos.y + m_size.y + _coll.GetRad().y + Utillity::epsilon
+             );
+         }
     }
 };

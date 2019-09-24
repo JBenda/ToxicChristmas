@@ -25,6 +25,8 @@ int main() {
     );
     lvl->statics.push_back(new Box({0, 2}));
     lvl->statics.push_back(new Box(glm::vec2(4, 0)));
+    lvl->statics.push_back(new Slop(glm::vec2(2, 0), -2, 0));
+    lvl->statics.push_back(new Slop(glm::vec2(-2, 0), -2, 0.1f));
     
     world.LoadLevel(lvl);
 

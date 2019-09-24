@@ -21,7 +21,7 @@ class Player : public Collider {
     glm::mat4 m_mView;
 
     void Move(float _dT, const World& _world) {
-        m_vel.y += 10.f * _dT;
+        m_vel.y += Utillity::gravity * _dT;
         glm::vec2 diff = m_vel * _dT;
         std::optional<float> res = _world.MoveH(*this, m_pos + glm::vec2(diff.x, 0));
         if(res) {
@@ -53,6 +53,9 @@ public:
         m_vel.x = 0;
         if(_input.KeyDown(Input::Inputs::Right)) m_vel.x += 3;
         if(_input.KeyDown(Input::Inputs::Left)) m_vel.x += -3;
+        if(_input.KeyPressed(Input::Inputs::Jump)) {
+            m_vel.y -= Utillity::jumpPower;
+        }
     }
     const unsigned int* GetSpriteIdPtr() const { return &m_spriteId; }
     const float* GetMViewPtr() const { return glm::value_ptr(m_mView);}

@@ -7,6 +7,9 @@
 namespace Utillity {
     constexpr float StaticObjectSize = 1;
     constexpr float epsilon = 0.00001f;
+    constexpr float gravity = 9.8f;
+    constexpr float jumpPower = 8.0f;
+
     template<typename T>
     struct OrderReverser {
         OrderReverser(const T& _comp) : comp{_comp}{}

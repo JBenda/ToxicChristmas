@@ -4,8 +4,8 @@
 
 class Input{
 public:
-    static constexpr char Titels[] = "Up\0Down\0Left\0Right\0";
-    enum struct Inputs {Up, Down, Left, Right, LAST};
+    static constexpr char Titels[] = "Up\0Down\0Left\0Right\0Jump\0";
+    enum struct Inputs {Up, Down, Left, Right, Jump, LAST};
     struct InputState {
         unsigned char inputs[static_cast<unsigned int>(Inputs::LAST)];
         InputState(){}

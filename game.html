@@ -235,6 +235,7 @@ export function LoadedRescource(_name) {
 					const obj = this;
 					this.keys.forEach(function(k) { obj[k] = 0; });
 					super.bind(ptr);
+					console.log(Object.keys(this));
 				}
 				write() {
 					const obj = this;
@@ -249,8 +250,10 @@ export function LoadedRescource(_name) {
 						this.Down = val;
 					else if(e.code === 'KeyA' || e.code === 'ArrowLeft')
 						this.Left = val;
-					else if(e.code === 'KeyD' || e.code === 'ArrowRight') {
+					else if(e.code === 'KeyD' || e.code === 'ArrowRight')
 						this.Right = val;
+					else if (e.code === 'Space') {
+						this.Jump = val;
 					}
 				}
 				keydown(e) {

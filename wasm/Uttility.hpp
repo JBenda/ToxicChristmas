@@ -9,6 +9,7 @@ namespace Utillity {
     constexpr float epsilon = 0.00001f;
     constexpr float gravity = 9.8f;
     constexpr float jumpPower = 8.0f;
+    constexpr float ratio = 4.f / 3.f;
 
     template<typename T>
     struct OrderReverser {

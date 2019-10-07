@@ -6,8 +6,11 @@
 #include "Input.hpp"
 #include "World.hpp"
 #include "Object.hpp"
+#include "LevelLoader.hpp"
+#include "Camera.hpp"
 #include <glm/vec2.hpp>
 #include <memory>
+
 
 bool first = true;
 std::chrono::time_point<std::chrono::system_clock> last{};
@@ -17,16 +20,21 @@ Input::InputState lastInput;
 Input::InputState activeInput;
 
 World world{};
+Camera camera({-5.f * Utillity::ratio, -5.f}, {5.f * Utillity::ratio, 5.f});
 
 int main() {
+    shared::mProjection = camera.GetProjectionMatrix(); 
     std::shared_ptr<Level>lvl = std::make_shared<Level>(
+        10,
+        10,
         glm::vec2(0, 0),
         Utillity::Rect(glm::vec2(3, 0), glm::vec2(1, 1))
     );
-    lvl->statics.push_back(new Box({0, 2}));
-    lvl->statics.push_back(new Box(glm::vec2(4, 0)));
-    lvl->statics.push_back(new Slop(glm::vec2(2, 0), -2, 0));
-    lvl->statics.push_back(new Slop(glm::vec2(-2, 0), -2, 0));
+    lvl->statics.push_back(LevelLoader::Instanciate(LevelLoader::Tiles::Box, {0,2}));
+    lvl->statics.push_back(LevelLoader::Instanciate(LevelLoader::Tiles::Falling, {4,0}));
+    
+    lvl->statics.push_back(LevelLoader::Instanciate(LevelLoader::Tiles::Rising, {2, 0}));
+    lvl->statics.push_back(LevelLoader::Instanciate(LevelLoader::Tiles::Rising, {-2, 0}));
     
     world.LoadLevel(lvl);
 

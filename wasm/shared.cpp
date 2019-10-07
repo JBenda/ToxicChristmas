@@ -13,13 +13,18 @@ const float* player_mView = nullptr;
 const char str_input[] = "input";
 const Input::InputState* input = nullptr;
 
-const unsigned int amount = 3;
+const char str_mProjection[] = "projection";
+const float* mProjection = nullptr;
+
 void **shared[] = {
     (void**)str_player_frameCount,
     (void**)&player_frameCount,
     (void**)str_player_mView,
     (void**)&player_mView,
     (void**)str_input,
-    (void**)&input};
-
+    (void**)&input,
+    (void**)str_mProjection,
+    (void**)&mProjection
+};
+const unsigned int amount = sizeof(shared)  / sizeof(*shared)  / 2;
 };

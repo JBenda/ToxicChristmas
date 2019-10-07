@@ -5,14 +5,18 @@
 #include <memory>
 #include <vector>
 #include <optional>
+#include <glm/vec2.hpp>
 
 struct Level {
-    Level(const glm::vec2& _start, const Utillity::Rect& _target) : start{_start}, target{_target}{}
+    Level(unsigned int _w, unsigned int _h, const glm::vec2& _start, const Utillity::Rect& _target)
+    : start{_start}, target{_target}, width{_w}, height{_h}{}
     ~Level() {
         for(StaticObject* o : statics) {
             delete o;
         }
     }
+    unsigned int width;
+    unsigned int height;
     std::vector<StaticObject*> statics;
     glm::vec2 start;
     Utillity::Rect target;

@@ -25,6 +25,7 @@ public:
     virtual ~StaticObject() = default;
     unsigned int spriteId;
     float frameTime, frames, offset;
+    virtual StaticObject* Instanciate(const glm::vec2& _pos, float offset = 0) const = 0;
 };
 
 class Box : public StaticObject {
@@ -35,6 +36,13 @@ public:
         frameTime = 0.1f;
         frames = 1;
         offset = 0;
+    }
+    StaticObject* Instanciate(const glm::vec2& _pos, float _offset) const override {
+        Box* copy = new Box(_pos, spriteId);
+        copy->frameTime = frameTime;
+        copy->frames = frames;
+        copy->offset = _offset;
+        return copy;
     }
     float EndPositionH(const Collider& _coll, const glm::vec2& _target, bool movR) const override {
         if(movR) {
@@ -69,8 +77,17 @@ class Slop : public Box {
     bool m_rising; /**<< from left to right slop is rising */
 public:
     Slop(const glm::vec2& _pos, float _oLeft, float _oRight)
-        : Box(_pos, _oLeft > _oRight ? 2 : 1), m_oLeft{_oLeft}, m_oRight{_oRight}, m_rising{_oLeft > _oRight}
+        : Box(_pos), m_oLeft{_oLeft}, m_oRight{_oRight}, m_rising{_oLeft > _oRight}
         {}
+    StaticObject* Instanciate(const glm::vec2& _pos, float _offset) const override{
+        Slop* copy = new Slop(_pos, m_oLeft, m_oRight);
+        copy->spriteId = spriteId;
+        copy->frameTime = frameTime;
+        copy->frames = frames;
+        copy->offset = _offset;
+        return copy;
+    }
+
     float EndPositionH(const Collider& _coll, const glm::vec2& _target, bool movR) const override {
         if(movR == m_rising && !_coll.IsIn(*this)) {
             return Box::EndPositionH(_coll, _target, movR);
@@ -80,7 +97,8 @@ public:
     }
     float EndPositionV(const Collider& _coll, const glm::vec2& _target, bool movD) const override {
         if(movD) {
-            float relSlopPos = (_target.x + _coll.GetRad().x - m_pos.x) / m_size.x * 0.5f + 0.5f;
+            float relSlopPos = (_target.x 
+                + (m_rising ? -_coll.GetRad().x  : _coll.GetRad().x)- m_pos.x) / m_size.x * 0.5f + 0.5f;
             relSlopPos = std::clamp<float>(relSlopPos, 0, 1);
             float relSlopPos_1 = 1.0f - relSlopPos;
 #ifdef DEBUG

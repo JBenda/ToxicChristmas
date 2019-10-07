@@ -11,7 +11,7 @@
 		<div style="display:none" id="devNull"></div>
 		<script type="module">
 import { createPlayer, buildScene } from './render.js';
-import SpriteSheet from './SpriteSheet.js';
+import SpriteSheet from './spriteSheet.js';
 import { createStaticObjects } from './staticObjects.js';
 
 const game = { state: 'preRun'};
@@ -72,14 +72,14 @@ window.initRenderLoop = function() {
 	);
 	game.player = createPlayer(gl, runnerSheet);
 	const view = mat4.create();
-	const proj = mat4.create();
+	/* const proj = mat4.create();
 	mat4.fromScaling(view, [0.3, 0.3, 1]);
-	mat4.translate(view, view, [1, 0.5, 0]);
-	
+	mat4.translate(view, view, [1, 0.5, 0]); */
 	const ratio = canvas.width / canvas.height;
-	const heightInTiles = 5;
-	mat4.ortho(proj, -ratio * heightInTiles, ratio * heightInTiles, heightInTiles, -heightInTiles, -1, 1);
-	game.camera = {proj};
+        console.log("ratio: " + ratio);
+	// const heightInTiles = 5;
+	// mat4.ortho(proj, -ratio * heightInTiles, ratio * heightInTiles, heightInTiles, -heightInTiles, -1, 1);
+	game.camera = { proj: shared.projection.data };
 
 	game.player.SetViewMatrix(window.shared.player_mView.data);
 	game.player.frame = window.shared.player_frameCount.data;
@@ -116,6 +116,7 @@ function startGame() {
 }
 function pauseGame() {
 	if(game.state !== Run) return;
+        if(wasmFn) wasmFn.Pause();
 	game.state = Suspand;
 }
 function continueGame() {
@@ -268,6 +269,7 @@ export function LoadedRescource(_name) {
 				player_frameCount: new INumber(),
 				player_mView: new  Matrix(),
 				input: new Inputs(),
+                                projection: new Matrix(),
 			};
 			function BindASM() {
 				console.log("start binding");

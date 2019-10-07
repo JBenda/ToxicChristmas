@@ -28,14 +28,14 @@ export default class SpriteSheet {
         var pos = 0;
         for(var y = 0; y < this.h; y++) {
             for(var x = 0; x < this.w; x++) {
-                this.uvs[pos] = toUVW(x); pos++;
-                this.uvs[pos] = toUVH(y + 1); pos++;
-                this.uvs[pos] = toUVW(x + 1); pos++;
-                this.uvs[pos] = toUVH(y + 1); pos++;
-                this.uvs[pos] = toUVW(x); pos++;
-                this.uvs[pos] = toUVH(y); pos++;
-                this.uvs[pos] = toUVW(x + 1); pos++;
-                this.uvs[pos] = toUVH(y); pos++;
+                this.uvs[pos] = toUVW(x + 0.01); pos++;
+                this.uvs[pos] = toUVH(y + 0.99); pos++;
+                this.uvs[pos] = toUVW(x + 0.99); pos++;
+                this.uvs[pos] = toUVH(y + 0.99); pos++;
+                this.uvs[pos] = toUVW(x + 0.01); pos++;
+                this.uvs[pos] = toUVH(y + 0.01); pos++;
+                this.uvs[pos] = toUVW(x + 0.99); pos++;
+                this.uvs[pos] = toUVH(y + 0.01); pos++;
             }
         }
 

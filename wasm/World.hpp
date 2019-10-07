@@ -8,8 +8,8 @@
 #include <glm/vec2.hpp>
 
 struct Level {
-    Level(unsigned int _w, unsigned int _h, const glm::vec2& _start, const Utillity::Rect& _target)
-    : start{_start}, target{_target}, width{_w}, height{_h}{}
+    Level(unsigned int _w, unsigned int _h, const glm::vec2& _origin, const glm::vec2& _start, const Utillity::Rect& _target)
+    : origin{_origin}, start{_start}, target{_target}, width{_w}, height{_h}{}
     ~Level() {
         for(StaticObject* o : statics) {
             delete o;
@@ -17,6 +17,7 @@ struct Level {
     }
     unsigned int width;
     unsigned int height;
+    const glm::vec2 origin;
     std::vector<StaticObject*> statics;
     glm::vec2 start;
     Utillity::Rect target;
@@ -25,9 +26,14 @@ struct Level {
 class World{
 public:
     const std::vector<StaticObject*>& GetStaticObjects() { return m_level->statics; }
+    void GetDimensions (unsigned int& r_w, unsigned int& r_h, glm::vec2& r_origin) const {
+        r_w = m_level->width;
+        r_h = m_level->height;
+        r_origin = m_level->origin;
+    }
     void LoadLevel(const std::shared_ptr<Level>& _level) {
         m_level = _level;
-        unsigned int size = m_level->statics.size();
+        // unsigned int size = m_level->statics.size();
     }
     std::optional<float> MoveH(const Collider& _coll, const glm::vec2& _target) const {
         bool movR = _target.x > _coll.GetPos().x;
@@ -62,6 +68,7 @@ public:
         }
         return std::optional<float>();
     }
+
 private:
     std::shared_ptr<Level> m_level;
     mutable std::vector<const Object*> m_objBuffer;

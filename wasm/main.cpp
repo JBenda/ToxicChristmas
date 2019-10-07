@@ -20,15 +20,16 @@ Input::InputState lastInput;
 Input::InputState activeInput;
 
 World world{};
-Camera camera({-5.f * Utillity::ratio, -5.f}, {5.f * Utillity::ratio, 5.f});
+Camera camera({-5.f * Utillity::ratio, 5.f}, {5.f * Utillity::ratio, -5.f});
 
 int main() {
     shared::mProjection = camera.GetProjectionMatrix(); 
     std::shared_ptr<Level>lvl = std::make_shared<Level>(
-        10,
-        10,
-        glm::vec2(0, 0),
-        Utillity::Rect(glm::vec2(3, 0), glm::vec2(1, 1))
+        30, // w
+        10, // h
+        glm::vec2(-5, -5), // origin
+        glm::vec2(0, 0), // start pos
+        Utillity::Rect(glm::vec2(3, 0), glm::vec2(1, 1)) // target area
     );
     lvl->statics.push_back(LevelLoader::Instanciate(LevelLoader::Tiles::Box, {0,2}));
     lvl->statics.push_back(LevelLoader::Instanciate(LevelLoader::Tiles::Falling, {4,0}));
@@ -76,6 +77,7 @@ extern "C" {
             std::chrono::duration<float> d = now - last;
             float dT = d.count();
             player.Update(dT, input, world);
+            camera.Update(dT, input, player, world);
         } else { first = false; }
         last = now;
         lastInput = activeInput;

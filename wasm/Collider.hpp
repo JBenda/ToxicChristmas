@@ -8,7 +8,7 @@
 
 class Collider {
 protected:
-    const glm::vec2 m_size;
+    glm::vec2 m_size;
     glm::vec2 m_pos;
     glm::vec2 m_vel;
 

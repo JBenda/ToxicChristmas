@@ -2,6 +2,8 @@
 
 #define DEBUG
 
+#define REF
+
 #include <glm/vec2.hpp>
 
 namespace Utillity {
@@ -9,6 +11,15 @@ namespace Utillity {
     constexpr float epsilon = 0.00001f;
     constexpr float gravity = 9.8f;
     constexpr float jumpPower = 8.0f;
+
+    namespace Player {
+        constexpr float a_ground = 5;
+        constexpr float a_air = 3;
+        constexpr float maxSpeed = 20;
+        constexpr float xSpeedTransform = 0.6f; ///< part of horizontel speed transformed in heigh 
+        constexpr float slowdown = 0.7f; ///< g * slowdon = g
+    }
+
     constexpr float ratio = 4.f / 3.f;
 
     template<typename T>

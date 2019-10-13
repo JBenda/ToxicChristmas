@@ -7,7 +7,8 @@
 class LevelLoader
 {
 public:
-    enum struct Tiles { Box, Rising, Falling, LAST};
+    enum struct Tiles { Box, ClessBox, HBox, Rising, Falling, LAST};
+    static constexpr unsigned char ColorEncoding[] = {0, 10, 20, 100, 200}; ///< red value = tile type
     template<typename T>
     static const T* GetTemplate(Tiles _tile) {
         if(!m_templates)
@@ -33,6 +34,18 @@ private:
         box->frames = 1;
         box->spriteId = 0;
         m_templates[static_cast<unsigned int>(Tiles::Box)] = box;
+
+        Img* clessBox = new Img({0,0});
+        clessBox->frameTime = 0.1f;
+        clessBox->frames = 1;
+        clessBox->spriteId = 0;
+        m_templates[static_cast<unsigned int>(Tiles::ClessBox)] = clessBox;
+
+        HBox* hbox = new HBox({0,0});
+        hbox->frameTime = 0.1f;
+        hbox->frames = 1;
+        hbox->spriteId = 0;
+        m_templates[static_cast<unsigned int>(Tiles::HBox)] = hbox;
 
         Slop* rising = new Slop({0,0}, -2, 0);
         rising->frameTime = 0.1f;

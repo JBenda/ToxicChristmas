@@ -58,6 +58,20 @@ function bindInputs(obj) {
 
 window.initRenderLoop = function() {
 	console.debug("init also start");
+
+	const converter = document.getElementById("converter").getContext("2d");
+	const lvlImg = document.getElementById("level");
+	if(converter.width < lvlImg.width)
+		converter.width = lvlImg.width;
+	if(converter.height < lvlImg.height)
+		converter.height = lvlImg.height;
+	converter.drawImage(lvlImg, 0, 0);
+	const levelData = converter.getImageData(0, 0, lvlImg.width, lvlImg.height);
+	buffer = Module._malloc(levelData.data.length);
+	Module.HEAP8.set(levelData.data, buffer);
+	wasmFn.LoadLevel(buffer, levelData.data.length / 4, levelData.width, levelData.height);
+	Module._free(buffer);
+
 	bindInputs(window.shared.input);
 
 	game.scene = buildScene(gl);
@@ -273,6 +287,7 @@ export function LoadedRescource(_name) {
 			};
 			function BindASM() {
 				console.log("start binding");
+				wasmFn.LoadLevel = Module.cwrap('LoadLevel', null, ['number', 'number', 'number', 'number']);
 				wasmFn.GetSharedPointer = Module.cwrap('GetSharedPointer', 'number', null);
 				wasmFn.SharedPointerLength = Module.cwrap('SharedPointerLength', 'number', null);
 				wasmFn.Update = Module.cwrap('Update', null, null);
@@ -312,6 +327,8 @@ export function LoadedRescource(_name) {
 		<div style="display:none">
 			<img src="assets/runner.png" id="runner"/>
 			<img src="assets/tiles.png" id="boom" />
+			<img src="levels/1.png" id="level" />
+			<canvas id="converter" ></canvas>
 		</div>
 	</body>
 </html>

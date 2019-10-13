@@ -21,6 +21,8 @@ private:
 protected:
     StaticObject(const glm::vec2& pos)
     : Object(glm::vec2(w, h), pos){}
+    StaticObject(const glm::vec2& pos, const glm::vec2& size)
+    : Object(size, pos){}
 public:
     virtual ~StaticObject() = default;
     unsigned int spriteId;
@@ -72,6 +74,53 @@ public:
     }
 };
 
+class HBox : public Box {
+public:
+    HBox(const glm::vec2& pos, unsigned int sid = 0) 
+    : Box(pos, sid){
+        frameTime = 0.1f;
+        frames = 1;
+        offset = 0;
+    }
+    StaticObject* Instanciate(const glm::vec2& _pos, float _offset) const override {
+        HBox* copy = new HBox(_pos, spriteId);
+        copy->frameTime = frameTime;
+        copy->frames = frames;
+        copy->offset = offset;
+        return copy;
+    }
+    float EndPositionH(const Collider&, const glm::vec2& _target, bool) const override {
+        return _target.x;
+    }
+    float EndPositionV(const Collider& _coll, const glm::vec2& _target, bool movD) const override {
+        return Box::EndPositionV(_coll, _target, movD);
+    }
+};
+
+class Img : public StaticObject {
+public:
+    Img(const glm::vec2& pos, unsigned int sid = 0) 
+    : StaticObject(pos) {
+        spriteId = sid;
+        frameTime = 0.1f;
+        frames = 1;
+        offset = 0;
+    }
+    StaticObject* Instanciate(const glm::vec2& _pos, float _offset) const override {
+        Img* copy = new Img(_pos, spriteId);
+        copy->frameTime = frameTime;
+        copy->frames = frames;
+        copy->offset = _offset;
+        return copy;
+    }
+    float EndPositionH(const Collider&, const glm::vec2& _target, bool) const override {
+        return _target.x;
+    }
+    float EndPositionV(const Collider&, const glm::vec2& _target, bool) const override {
+        return _target.y;
+    }
+};
+
 class Slop : public Box {
     float m_oLeft, m_oRight;
     bool m_rising; /**<< from left to right slop is rising */
@@ -97,8 +146,9 @@ public:
     }
     float EndPositionV(const Collider& _coll, const glm::vec2& _target, bool movD) const override {
         if(movD) {
+            float x = _coll.GetRad().x + Utillity::epsilon;
             float relSlopPos = (_target.x 
-                + (m_rising ? -_coll.GetRad().x  : _coll.GetRad().x)- m_pos.x) / m_size.x * 0.5f + 0.5f;
+                + (m_rising ? - x  : x)- m_pos.x) / m_size.x * 0.5f + 0.5f;
             relSlopPos = std::clamp<float>(relSlopPos, 0, 1);
             float relSlopPos_1 = 1.0f - relSlopPos;
 #ifdef DEBUG

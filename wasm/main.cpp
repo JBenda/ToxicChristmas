@@ -25,17 +25,15 @@ Camera camera({-5.f * Utillity::ratio, 5.f}, {5.f * Utillity::ratio, -5.f});
 int main() {
     shared::mProjection = camera.GetProjectionMatrix(); 
     std::shared_ptr<Level>lvl = std::make_shared<Level>(
-        30, // w
+        80, // w
         10, // h
         glm::vec2(-5, -5), // origin
         glm::vec2(0, 0), // start pos
         Utillity::Rect(glm::vec2(3, 0), glm::vec2(1, 1)) // target area
     );
-    lvl->statics.push_back(LevelLoader::Instanciate(LevelLoader::Tiles::Box, {0,2}));
-    lvl->statics.push_back(LevelLoader::Instanciate(LevelLoader::Tiles::Falling, {4,0}));
-    
-    lvl->statics.push_back(LevelLoader::Instanciate(LevelLoader::Tiles::Rising, {2, 0}));
-    lvl->statics.push_back(LevelLoader::Instanciate(LevelLoader::Tiles::Rising, {-2, 0}));
+    for(int i = 0; i < 20; ++i) {
+        lvl->statics.push_back(LevelLoader::Instanciate(LevelLoader::Tiles::Box, {i * 2, 2}));
+    }
     
     world.LoadLevel(lvl);
 
@@ -49,6 +47,34 @@ int main() {
 }
 
 extern "C" {
+    EMSCRIPTEN_KEEPALIVE
+    void LoadLevel(unsigned char const * levelData, unsigned int amtPx, unsigned int width, unsigned int height) {
+        std::shared_ptr<Level>lvl = std::make_shared<Level>(
+            width * 2,
+            height * 2,
+            glm::vec2(0,0),
+            glm::vec2(0,0),
+            Utillity::Rect({3,0},{1,1})
+        );
+        unsigned char const * itr = levelData;
+        for(unsigned int y = 0; y < height; ++y) {
+            for(unsigned int x = 0; x < width; ++x) {
+                unsigned char
+                    r = *(itr++),
+                    g = *(itr++),
+                    b = *(itr++),
+                    a = *(itr++);
+                for (unsigned int i = 0; i < static_cast<unsigned int>(LevelLoader::Tiles::LAST); ++i) {
+                    if(a == 255 && r == LevelLoader::ColorEncoding[i]) {
+                        lvl->statics.push_back(LevelLoader::Instanciate(static_cast<LevelLoader::Tiles>(i), {x * 2 + 1, y * 2 + 1}));
+                    }
+                }
+            }
+            std::cout << '\n';
+        }
+        world.LoadLevel(lvl);
+    }
+
     EMSCRIPTEN_KEEPALIVE
     unsigned int SharedPointerLength() {
         return shared::amount;

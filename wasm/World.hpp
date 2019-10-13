@@ -24,6 +24,7 @@ struct Level {
 };
 
 class World{
+    static float dummy;
 public:
     const std::vector<StaticObject*>& GetStaticObjects() { return m_level->statics; }
     void GetDimensions (unsigned int& r_w, unsigned int& r_h, glm::vec2& r_origin) const {
@@ -35,7 +36,9 @@ public:
         m_level = _level;
         // unsigned int size = m_level->statics.size();
     }
-    std::optional<float> MoveH(const Collider& _coll, const glm::vec2& _target) const {
+    std::optional<float> MoveH(const Collider& _coll, const glm::vec2& _target, float& r_y = dummy) const {
+        glm::vec2 target = _target;
+        bool movD = true;
         bool movR = _target.x > _coll.GetPos().x;
         m_objBuffer.resize(0);
         GetCrossedObj(m_level->statics, _coll, _target, m_objBuffer);
@@ -44,10 +47,14 @@ public:
         else
             sort(m_objBuffer.begin(), m_objBuffer.end(), Utillity::OrderReverser(Collider::SortPosHorizontel()));
         for(const Object *o : m_objBuffer) {
-            float x = o->EndPositionH(_coll, _target, movR);
-            if(x != _target.x)
+            float x = o->EndPositionH(_coll, target, movR);
+            target.y = o->EndPositionV(_coll, target, movD);
+            if(x != _target.x) {
+                r_y = target.y;
                 return std::optional(x);
+            }
         }
+        r_y = target.y;
         return std::optional<float>();
     }
 

@@ -10,7 +10,7 @@
 		<canvas tabindex="0" height="480px" width="640px" id="glFrame"></canvas>
 		<div style="display:none" id="devNull"></div>
 		<script type="module">
-import { createPlayer, buildScene } from './render.js';
+import { createPlayer, createToxic, buildScene } from './render.js';
 import SpriteSheet from './spriteSheet.js';
 import { createStaticObjects } from './staticObjects.js';
 
@@ -56,11 +56,13 @@ function bindInputs(obj) {
 	canvas.addEventListener('keyup', function(e) {obj.keyup(e);});
 } 
 
+var converter = null;
+var lvlImg = null;
 window.initRenderLoop = function() {
 	console.debug("init also start");
 
-	const converter = document.getElementById("converter").getContext("2d");
-	const lvlImg = document.getElementById("level");
+	converter = document.getElementById("converter").getContext("2d");
+	lvlImg = document.getElementById("level");
 	if(converter.width < lvlImg.width)
 		converter.width = lvlImg.width;
 	if(converter.height < lvlImg.height)
@@ -85,6 +87,7 @@ window.initRenderLoop = function() {
 		8, 8
 	);
 	game.player = createPlayer(gl, runnerSheet);
+	game.toxic = createToxic(gl, {x: lvlImg.width * 2, y: lvlImg.height * 2});
 	const view = mat4.create();
 	/* const proj = mat4.create();
 	mat4.fromScaling(view, [0.3, 0.3, 1]);
@@ -154,6 +157,7 @@ function draw() {
 		game.scene.clear();
 		game.player.draw(game);
 		game.staticObjects.draw(game);
+		game.toxic.draw(game);
 	}
 }
 

@@ -204,7 +204,51 @@ export class Buffer {
         );
     }
 }
+class Toxic {
+    constructor(contex, tex, size) {
+        this.gl = contex;
+        this.pipe = loadNormalPipe(contex);
+        
+        const planeP = [0,size.y, size.x,size.y, 0,0, size.x,0];
+        const pos = new Buffer(contex, planeP, Float32Array, contex.ARRAY_BUFFER, contex.STATIC_DRAW);
 
+        const planeUV = [0,1, 1,1, 0,0, 1,0];
+        const uv = new Buffer(contex, planeUV, Float32Array, contex.ARRAY_BUFFER, contex.STATIC_DRAW);
+
+        this.buffer = {pos, uv};
+
+        this.mId= mat4.create();
+
+        this.tex = tex;
+
+
+        // level Tex (blue > 128 sporn gas, blue < 128 consume gas)
+        // density and vel Tex -> r=velx, g=vely, b=sporn, a=density
+        // new render pipe a in color
+        // color
+    }
+
+    draw(game) {
+        this.gl.useProgram(this.pipe.prog);
+        this.gl.enableVertexAttribArray(this.pipe.attrLoc.pos);
+        this.gl.enableVertexAttribArray(this.pipe.attrLoc.uv);
+
+        this.gl.activeTexture(this.gl.TEXTURE0);
+        this.gl.uniform1i(this.pipe.uniLoc.sampler, 0);
+        this.gl.bindTexture(this.gl.TEXTURE_2D, this.tex);
+
+        this.gl.uniformMatrix4fv(this.pipe.uniLoc.mView, false, this.mId);
+        this.gl.uniformMatrix4fv(this.pipe.uniLoc.mProj, false, game.camera.proj);
+
+        this.buffer.pos.bindAttribPointer(this.pipe.attrLoc.pos, 2, false, 0);
+        this.buffer.uv.bindAttribPointer(this.pipe.attrLoc.uv, 2, false, 0);
+
+        this.gl.drawArrays(this.gl.TRIANGLE_STRIP, 0, 4);
+
+        this.gl.disableVertexAttribArray(this.pipe.attrLoc.pos);
+        this.gl.disableVertexAttribArray(this.pipe.attrLoc.uv);
+    }
+};
 class Player {
     constructor(context, _spriteSheet) {
         this.gl = context;
@@ -248,3 +292,7 @@ export function createPlayer(gl, _spriteSheet)  {
     return new Player(gl, _spriteSheet);
 }
 
+export function createToxic(gl, size) {
+    const tex = loadTexture(gl, "", null,[255, 255, 0, 100]);
+    return new Toxic(gl, tex, size);
+}

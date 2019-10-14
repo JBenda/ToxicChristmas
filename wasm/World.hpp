@@ -59,12 +59,14 @@ public:
     }
 
     std::optional<float> MoveV(const Collider& _coll, const glm::vec2& _target) const {
+        ground = false;
         bool movD = _target.y > _coll.GetPos().y;
         m_objBuffer.resize(0);
         GetCrossedObj(m_level->statics, _coll, _target, m_objBuffer);
-        if(movD)
+        if(movD) {
             sort(m_objBuffer.begin(), m_objBuffer.end(), Collider::SortPosVertical());
-        else
+            ground = m_objBuffer.size() > 0;
+        } else
             sort(m_objBuffer.begin(), m_objBuffer.end(), Utillity::OrderReverser(Collider::SortPosVertical()));
         
         for(const Object* o : m_objBuffer) {
@@ -76,7 +78,10 @@ public:
         return std::optional<float>();
     }
 
+    bool IsGrounded() const { return ground; }
+
 private:
+    mutable bool ground = 0;
     std::shared_ptr<Level> m_level;
     mutable std::vector<const Object*> m_objBuffer;
 

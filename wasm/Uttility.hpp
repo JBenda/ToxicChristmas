@@ -9,7 +9,7 @@
 namespace Utillity {
     constexpr float StaticObjectSize = 1;
     constexpr float epsilon = 0.00001f;
-    constexpr float gravity = 9.8f;
+    constexpr float gravity = 20.f;
     constexpr float jumpPower = 8.0f;
 
     namespace Player {
@@ -18,6 +18,7 @@ namespace Utillity {
         constexpr float maxSpeed = 20;
         constexpr float xSpeedTransform = 0.6f; ///< part of horizontel speed transformed in heigh 
         constexpr float slowdown = 0.7f; ///< g * slowdon = g
+        constexpr unsigned int lastContactForJump = 10;
     }
 
     constexpr float ratio = 4.f / 3.f;

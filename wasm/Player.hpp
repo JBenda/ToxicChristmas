@@ -19,8 +19,10 @@ class Player : public Collider {
     Animation<Moves> m_animation;
     static constexpr unsigned int MoveFrames[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13};
     glm::mat4 m_mView;
-
+    unsigned int m_grounded = 0;
     void Move(float _dT, const World& _world) {
+        if(m_grounded) --m_grounded;
+
         glm::vec2 diff = m_vel * _dT;
         std::optional<float> res = _world.MoveH(*this, m_pos + glm::vec2(diff.x, 0), REF m_pos.y);
         if(res) {
@@ -37,6 +39,11 @@ class Player : public Collider {
         } else {
             m_pos.y = m_pos.y + diff.y;
         }
+
+        if(_world.IsGrounded()) {
+            std::cout << "ground\n";
+            m_grounded = Utillity::Player::lastContactForJump;
+        }
     }
 public:
     Player() : Collider(glm::vec2(0.7f, 0.9f)),  m_animation(), m_mView(1){
@@ -49,7 +56,7 @@ public:
         glm::vec2 a{0};
         if(_input.KeyDown(Input::Inputs::Right)) a.x += Utillity::Player::a_ground;
         if(_input.KeyDown(Input::Inputs::Left)) a.x -= Utillity::Player::a_ground;
-        if(_input.KeyPressed(Input::Inputs::Jump)) {
+        if(_input.KeyPressed(Input::Inputs::Jump) && m_grounded) {
             m_vel.y -= Utillity::jumpPower + Utillity::Player::xSpeedTransform * std::fabs(m_vel.x);
             m_vel.x *= (1.0f - Utillity::Player::xSpeedTransform);
         }

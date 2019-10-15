@@ -10,7 +10,8 @@
 		<canvas tabindex="0" height="480px" width="640px" id="glFrame"></canvas>
 		<div style="display:none" id="devNull"></div>
 		<script type="module">
-import { createPlayer, createToxic, buildScene } from './render.js';
+import { createPlayer, buildScene } from './render.js';
+import { createToxic } from './toxic.js';
 import SpriteSheet from './spriteSheet.js';
 import { createStaticObjects } from './staticObjects.js';
 
@@ -87,7 +88,7 @@ window.initRenderLoop = function() {
 		8, 8
 	);
 	game.player = createPlayer(gl, runnerSheet);
-	game.toxic = createToxic(gl, {x: lvlImg.width * 2, y: lvlImg.height * 2});
+	game.toxic = createToxic(gl, lvlImg.width, lvlImg.height, levelData.data, [255, 0, 0]);
 	const view = mat4.create();
 	/* const proj = mat4.create();
 	mat4.fromScaling(view, [0.3, 0.3, 1]);
@@ -115,7 +116,8 @@ window.initRenderLoop = function() {
 }
 
 function updateTime(obj) {
-	obj.s = new Date().getTime() / 1000.0;
+	const time = new Date().getTime() / 1000.0;
+	obj.s = time;
 }
 
 function checkConditions() {
@@ -145,7 +147,8 @@ function continueGame() {
 function update() {
 	if(game.state === Run) {
 		window.shared.input.write();
-		window.wasmFn.Update();
+		game.time.dT = window.wasmFn.Update();
+		game.toxic.update(game.time.dT);
 		draw();	
 		game.nextFrame = window.requestAnimationFrame(update);
 	}
@@ -294,7 +297,7 @@ export function LoadedRescource(_name) {
 				wasmFn.LoadLevel = Module.cwrap('LoadLevel', null, ['number', 'number', 'number', 'number']);
 				wasmFn.GetSharedPointer = Module.cwrap('GetSharedPointer', 'number', null);
 				wasmFn.SharedPointerLength = Module.cwrap('SharedPointerLength', 'number', null);
-				wasmFn.Update = Module.cwrap('Update', null, null);
+				wasmFn.Update = Module.cwrap('Update', 'number', null);
 				wasmFn.GetInputTitels = Module.cwrap('GetInputTitels', 'number', null);
 				wasmFn.Pause = Module.cwrap('Pause', null, null);
 				wasmFn.staticObjectsNumber = Module.cwrap('staticObjectsNumber', 'number', null);

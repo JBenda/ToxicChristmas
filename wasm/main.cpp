@@ -96,17 +96,19 @@ extern "C" {
     }
 
     EMSCRIPTEN_KEEPALIVE
-    void Update() {
+    float Update() {
+        float dT = 0;
         auto now = std::chrono::system_clock::now();
         if(!first) {
             const Input input(lastInput, activeInput);
             std::chrono::duration<float> d = now - last;
-            float dT = d.count();
+            dT = d.count();
             player.Update(dT, input, world);
             camera.Update(dT, input, player, world);
         } else { first = false; }
         last = now;
         lastInput = activeInput;
+        return dT;
     }
 
     EMSCRIPTEN_KEEPALIVE

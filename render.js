@@ -291,8 +291,3 @@ class Player {
 export function createPlayer(gl, _spriteSheet)  {
     return new Player(gl, _spriteSheet);
 }
-
-export function createToxic(gl, size) {
-    const tex = loadTexture(gl, "", null,[255, 255, 0, 100]);
-    return new Toxic(gl, tex, size);
-}

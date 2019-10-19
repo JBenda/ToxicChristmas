@@ -90,7 +90,7 @@ function loadToxicRenderPipe(gl) {
 }
 
 class Toxic {
-    constructor(gl, w, h, start, color = [255, 0, 0]) {
+    constructor(gl, w, h, start, resolution, color = [255, 0, 0]) {
         this.w = w;
         this.h = h;
         this.color = color.map(function(x) { return x / 255.0; });
@@ -100,7 +100,7 @@ class Toxic {
         gl.texImage2D(
             gl.TEXTURE_2D,
             0,
-            gl.RGBA, w, h,
+            gl.RGBA, w * resolution, h  * resolution,
             0,
             gl.RGBA, gl.UNSIGNED_BYTE, start.map(function(x,id){ return id%4===3 ? x : 0; }));
         const setTexPara = function() {
@@ -134,7 +134,7 @@ class Toxic {
         this.renderPipe = loadToxicRenderPipe(gl);
 
         this.renderBuffer = {
-            pos: new Buffer(gl, [0,h*2, w*2,h*2, 0,0, w*2,0], Float32Array, gl.ARRAY_BUFFER, gl.STATIC_DRAW),
+            pos: new Buffer(gl, [0,h , w,h, 0,0, w,0], Float32Array, gl.ARRAY_BUFFER, gl.STATIC_DRAW),
             uv: new Buffer(gl, [0,1, 1,1, 0,0, 1,0], Float32Array, gl.ARRAY_BUFFER, gl.STATIC_DRAW),
         };
 
@@ -198,5 +198,5 @@ class Toxic {
 };
 
 export function createToxic(gl, w, h, data, color) {
-    return new Toxic(gl, w, h, data, color);
+    return new Toxic(gl, w*2, h*2, data, 0.5, color);
 }

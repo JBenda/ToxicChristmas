@@ -41,7 +41,6 @@ class Player : public Collider {
         }
 
         if(_world.IsGrounded()) {
-            std::cout << "ground\n";
             m_grounded = Utillity::Player::lastContactForJump;
         }
     }

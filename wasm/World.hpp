@@ -50,11 +50,11 @@ public:
             float x = o->EndPositionH(_coll, target, movR);
             target.y = o->EndPositionV(_coll, target, movD);
             if(x != _target.x) {
-                r_y = target.y;
+                // r_y = target.y; // for avoiding bump stuck
                 return std::optional(x);
             }
         }
-        r_y = target.y;
+        // r_y = target.y; // for avoiding bump stuck
         return std::optional<float>();
     }
 

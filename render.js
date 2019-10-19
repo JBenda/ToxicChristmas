@@ -56,14 +56,28 @@ export function loadTexture(gl, _url, _setParams, _defColor) {
 
 export function loadTextureFromImg(gl, img) {
     const tex = gl.createTexture();
+    const px = new Uint8Array([0, 0, 255, 255]);
     function load() {
+        console.log("load :) ");
         gl.bindTexture(gl.TEXTURE_2D, tex);
-        gl.texImage2D(gl.TEXTURE_2D,
-            0,
-            gl.RGBA,
-            gl.RGBA,
-            gl.UNSIGNED_BYTE,
-            img);
+        if(img.complete) {
+            gl.texImage2D(gl.TEXTURE_2D,
+                0,
+                gl.RGBA,
+                gl.RGBA,
+                gl.UNSIGNED_BYTE,
+                img);
+            } else {
+            gl.texImage2D(gl.TEXTURE_2D,
+                0,
+                gl.RGBA,
+                1,
+                1,
+                0,
+                gl.RGBA,
+                gl.UNSIGNED_BYTE,
+                px);
+        }
         if(powO2(img.width) && powO2(img.height)) {
             gl.generateMipmap(gl.TEXTURE_2D);
             // gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST_MIPMAP_NEAREST);

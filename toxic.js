@@ -91,8 +91,8 @@ function loadToxicRenderPipe(gl) {
 
 class Toxic {
     constructor(gl, w, h, start, resolution, color = [255, 0, 0]) {
-        this.w = w;
-        this.h = h;
+        this.w = w * resolution;
+        this.h = h * resolution;
         this.color = color.map(function(x) { return x / 255.0; });
         this.gl = gl;
         this.tSrc = gl.createTexture();
@@ -100,7 +100,7 @@ class Toxic {
         gl.texImage2D(
             gl.TEXTURE_2D,
             0,
-            gl.RGBA, w * resolution, h  * resolution,
+            gl.RGBA, this.w, this.h,
             0,
             gl.RGBA, gl.UNSIGNED_BYTE, start.map(function(x,id){ return id%4===3 ? x : 0; }));
         const setTexPara = function() {
@@ -115,7 +115,7 @@ class Toxic {
         gl.texImage2D(
             gl.TEXTURE_2D,
             0,
-            gl.RGBA, w, h,
+            gl.RGBA, this.w, this.h,
             0,
             gl.RGBA, gl.UNSIGNED_BYTE, null);
         setTexPara();
@@ -167,7 +167,7 @@ class Toxic {
 
     update(dT) {
         const viewport = this.gl.getParameter(this.gl.VIEWPORT);
-        this.gl.viewport(0,0,this.w,this.h);
+        this.gl.viewport(0,0,this.w ,this.h);
 
         this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, this.fbDst);
 

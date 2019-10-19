@@ -81,7 +81,8 @@ window.initRenderLoop = function() {
 	const runnerSheet = new SpriteSheet(
 		gl,
 		document.getElementById('runner'),
-		415, 536);
+		415, 536,
+		true);
 	const objectSheet = new SpriteSheet(
 		gl,
 		document.getElementById('boom'),
@@ -100,7 +101,8 @@ window.initRenderLoop = function() {
 	game.camera = { proj: shared.projection.data };
 
 	game.player.SetViewMatrix(window.shared.player_mView.data);
-	game.player.frame = window.shared.player_frameCount.data;
+	game.player.frame = window.shared.player_frameCount;
+	game.player.flipFrame = window.shared.player_flipSprite;
 
 	game.staticObjects = createStaticObjects(gl, objectSheet, wasmFn, Module.HEAP8.buffer);
 
@@ -217,6 +219,14 @@ export function LoadedRescource(_name) {
 					this.data = new this.type(Module.HEAP8.buffer, ptr, this.size);
 				}
 			};
+			class IBool extends Shared {
+				constructor(length) {
+					super(length !== undefined ? length : 1, Uint8Array);
+				}
+				get(i) {
+					return this.data[i !== undefined ? i : 0] !== 0;
+				}
+			}
 			class INumber extends Shared {
 				constructor(length) {
 					super(length !== undefined ? length : 1, Uint32Array);
@@ -289,8 +299,9 @@ export function LoadedRescource(_name) {
 			window.shared = {
 				player_frameCount: new INumber(),
 				player_mView: new  Matrix(),
+				player_flipSprite: new IBool(),
 				input: new Inputs(),
-                                projection: new Matrix(),
+                projection: new Matrix(),
 			};
 			function BindASM() {
 				console.log("start binding");

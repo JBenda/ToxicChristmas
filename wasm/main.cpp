@@ -39,6 +39,7 @@ int main() {
 
     shared::player_frameCount = player.GetSpriteIdPtr();
     shared::player_mView = player.GetMViewPtr();
+    shared::player_flipSprite = player.GetIsFlippedPtr();
     shared::input = &activeInput;
     Box box(glm::vec2(0, 1));
 

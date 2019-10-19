@@ -16,7 +16,7 @@ namespace Utillity {
         constexpr float a_ground = 5;
         constexpr float a_air = 3;
         constexpr float maxSpeed = 20;
-        constexpr float xSpeedTransform = 0.6f; ///< part of horizontel speed transformed in heigh 
+        constexpr float xSpeedTransform = 0.3f; ///< part of horizontel speed transformed in heigh 
         constexpr float slowdown = 0.7f; ///< g * slowdon = g
         constexpr unsigned int lastContactForJump = 10;
     }

@@ -7,6 +7,9 @@ namespace shared {
 const char str_player_frameCount[] = "player_frameCount";
 const unsigned int *player_frameCount = nullptr;
 
+const char str_player_flipSprite[] = "player_flipSprite";
+const bool* player_flipSprite = nullptr;
+
 const char str_player_mView[] = "player_mView";
 const float* player_mView = nullptr;
 
@@ -19,6 +22,8 @@ const float* mProjection = nullptr;
 void **shared[] = {
     (void**)str_player_frameCount,
     (void**)&player_frameCount,
+    (void**)str_player_flipSprite,
+    (void**)&player_flipSprite,
     (void**)str_player_mView,
     (void**)&player_mView,
     (void**)str_input,

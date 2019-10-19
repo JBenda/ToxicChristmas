@@ -15,7 +15,8 @@
 #include <utility>
 
 class Player : public Collider {
-    unsigned int m_spriteId;
+    unsigned int m_spriteId {0};
+    bool m_flippSprite {true};
     enum struct Moves { runR, jump, up, down, idle, LAST };
     Animation<Moves> m_animation;
     static constexpr unsigned int MoveFrames[] = {20, 21, 22, 23, 24, 25, 26, 27, 28, 29};
@@ -81,10 +82,12 @@ public:
         glm::vec2 a{0};
         if(_input.KeyDown(Input::Inputs::Right)) {
             moves.set(Movment::run);
+            m_flippSprite = false;
             a.x += Utillity::Player::a_ground;
         }
 
         if(_input.KeyDown(Input::Inputs::Left)) {
+            m_flippSprite = true;
             moves.set(Movment::run);
             a.x -= Utillity::Player::a_ground;
         }
@@ -146,5 +149,6 @@ public:
     }
 
     const unsigned int* GetSpriteIdPtr() const { return &m_spriteId; }
+    const bool* GetIsFlippedPtr() const { return &m_flippSprite; }
     const float* GetMViewPtr() const { return glm::value_ptr(m_mView);}
 };

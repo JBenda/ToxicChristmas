@@ -4,6 +4,7 @@
 
 namespace shared {
     extern const unsigned int* player_frameCount;
+    extern const bool* player_flipSprite;
     extern const float* player_mView;
     extern const Input::InputState* input;
     extern const float* mProjection;

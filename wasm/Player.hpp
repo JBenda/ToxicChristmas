@@ -16,7 +16,7 @@
 
 class Player : public Collider {
     unsigned int m_spriteId {0};
-    bool m_flippSprite {true};
+    bool m_flippSprite {false};
     enum struct Moves { runR, jump, up, down, idle, LAST };
     Animation<Moves> m_animation;
     static constexpr unsigned int MoveFrames[] = {20, 21, 22, 23, 24, 25, 26, 27, 28, 29};
@@ -29,8 +29,8 @@ class Player : public Collider {
         Frames[] = {
             {ARR_E(MoveFrames), 0.05f},
             {ARR_E(JumpFrames), 0.05f},
-            {ARR_E(UpFrames), 0.2f},
-            {ARR_E(DownFrames), 0.2f},
+            {ARR_E(UpFrames), 0.05f},
+            {ARR_E(DownFrames), 0.05f},
             {ARR_E(IdleFrames), 0.05f}
         };
     glm::mat4 m_mView;

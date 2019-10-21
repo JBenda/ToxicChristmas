@@ -8,7 +8,7 @@ class LevelLoader
 {
 public:
     enum struct Tiles { Box, ClessBox, HBox, Rising, Falling, LAST};
-    static constexpr unsigned char ColorEncoding[] = {0, 10, 20, 100, 200}; ///< red value = tile type
+    static constexpr unsigned char ColorEncoding[] = {30, 10, 20, 100, 200}; ///< red value = tile type
     template<typename T>
     static const T* GetTemplate(Tiles _tile) {
         if(!m_templates)

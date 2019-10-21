@@ -58,9 +58,9 @@ export function loadTextureFromImg(gl, img) {
     const tex = gl.createTexture();
     const px = new Uint8Array([0, 0, 255, 255]);
     function load() {
-        console.log("load :) ");
         gl.bindTexture(gl.TEXTURE_2D, tex);
         if(img.complete) {
+            console.log("finished");
             gl.texImage2D(gl.TEXTURE_2D,
                 0,
                 gl.RGBA,
@@ -68,6 +68,7 @@ export function loadTextureFromImg(gl, img) {
                 gl.UNSIGNED_BYTE,
                 img);
             } else {
+            console.log("unfinished");
             gl.texImage2D(gl.TEXTURE_2D,
                 0,
                 gl.RGBA,

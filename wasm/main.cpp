@@ -71,7 +71,6 @@ extern "C" {
                     }
                 }
             }
-            std::cout << '\n';
         }
         world.LoadLevel(lvl);
     }

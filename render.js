@@ -39,7 +39,7 @@ export function loadTexture(gl, _url, _setParams, _defColor) {
             gl.RGBA,
             gl.UNSIGNED_BYTE,
             img);
-        if(powO2(img.width) && posO2(img.height)) {
+        if(powO2(img.width) && powO2(img.height)) {
             gl.generateMipmap(gl.TEXTURE_2D);
         }
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
@@ -55,12 +55,14 @@ export function loadTexture(gl, _url, _setParams, _defColor) {
 }
 
 export function loadTextureFromImg(gl, img) {
+    return loadTexture(gl, img.src);
     const tex = gl.createTexture();
     const px = new Uint8Array([0, 0, 255, 255]);
-    function load() {
+    const load = function() {
         gl.bindTexture(gl.TEXTURE_2D, tex);
         if(img.complete) {
             console.log("finished");
+            console.log(img);
             gl.texImage2D(gl.TEXTURE_2D,
                 0,
                 gl.RGBA,
@@ -90,7 +92,7 @@ export function loadTextureFromImg(gl, img) {
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
     }
-    load();
+    // load();
 
     img.onload = load();
 

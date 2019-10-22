@@ -60,7 +60,7 @@ loadToxicCalcPipe.diffuse = {
         uniform vec2 uSizePx;
 
         uniform float alpha;
-        uniform float beta;
+        uniform vec2 beta;
         uniform int nLayer;
 
         in highp vec2 uv;
@@ -73,8 +73,8 @@ loadToxicCalcPipe.diffuse = {
             vec4 u = texture(uSampler, uv - vec2(0, uSizePx.y));
 
             color = texture(uSampler, uv);
-            color[2] = (l[2] + r[2] + d[2] + u[2] + alpha * color[2]) * beta;
-            color[3] = (l[3] + r[3] + d[3] + u[3] + alpha * color[3]) * beta;
+            color[2] = (l[2] + r[2] + d[2] + u[2] + alpha * color[2]) * beta.x;
+            color[3] = (l[3] + r[3] + d[3] + u[3] + alpha * color[3]) * beta.y;
         }
         `,
     bindUni: function(gl, prog) {
@@ -141,7 +141,7 @@ loadToxicCalcPipe.applyForce = {
 
             color = texture(uSampler, uv);
             color.xy -= vec2(r.w - l.w, d.w - u.w);
-            color.y += dT * color.b;
+            color.y += dT * color.b * 10.0;
         }
     `,
     bindUni: function(gl, prog) {
@@ -203,8 +203,8 @@ loadToxicCalcPipe.addSource = {
         void main() {
             color = texture(uSampler, uv);
             float s = texture(src, uv).b;
-            color.b += s * dT;
-            color.a = 0.0;
+            color.b += s * dT * 1.5;
+            // color.a = 0.0;
         }
     `,
     bindUni: function(gl, prog) {
@@ -408,7 +408,7 @@ class Toxic {
         this.diffuse(dT, 30);
         this.source(dT);
         // this.addForce();
-        this.projection(dT, 80);
+        this.projection(dT, 30);
         this.applyForce(dT);
         this.bordar();
 
@@ -466,7 +466,7 @@ class Toxic {
 
             this.gl.uniform2f(this.diffusePipe.uniLoc.size, 1.0 / this.w, 1.0 / this.h);
             this.gl.uniform1f(this.diffusePipe.uniLoc.alpha, alpha);
-            this.gl.uniform1f(this.diffusePipe.uniLoc.beta, beta);
+            this.gl.uniform2f(this.diffusePipe.uniLoc.beta, beta * 1.0, beta);
             this.gl.uniform1i(this.diffusePipe.uniLoc.layer, 3);
 
             this.gl.drawArrays(this.gl.TRIANGLE_STRIP, 0, 4);
@@ -524,7 +524,7 @@ class Toxic {
 };
 
 export function createToxic(gl, w, h, data, color) {
-    const resolution = 100;
+    const resolution = 10;
 
     const arr = new Float32Array(data.length * resolution * resolution);
     var src = 0, dst = 0;

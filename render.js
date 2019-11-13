@@ -100,7 +100,7 @@ export function loadTextureFromImg(gl, img) {
 }
 
 export function buildScene(gl) {
-    gl.clearColor(0.2, 0.4, 0.7, 1);
+    gl.clearColor(0.2, 0.4, 0.1, 1);
     gl.clearDepth(1);
     
     gl.enable(gl.DEPTH_TEST);

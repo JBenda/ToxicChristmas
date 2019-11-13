@@ -41,7 +41,8 @@ loadToxicCalcPipe.advect = {
 
         void main() {
             vec4 px = texture(uSampler, uv);
-            color = texture(uSampler, uv - dT * px.xy); 
+						// TODO: remove hard-coded values
+            color = texture(uSampler, uv - dT * vec2(px.x * 0.005, px.y * 0.02)); 
         }
         `,
     bindUni: function(gl, prog) {
@@ -73,7 +74,9 @@ loadToxicCalcPipe.diffuse = {
             vec4 u = texture(uSampler, uv - vec2(0, uSizePx.y));
 
             color = texture(uSampler, uv);
-            color[2] = (l[2] + r[2] + d[2] + u[2] + alpha * color[2]) * beta.x;
+						float a = alpha * 20.;
+						float b = 1.0 / (4. + a);
+            color[2] = (l[2] + r[2] + d[2] + u[2] + a * color[2]) * b;
             color[3] = (l[3] + r[3] + d[3] + u[3] + alpha * color[3]) * beta.y;
         }
         `,
@@ -106,10 +109,10 @@ loadToxicCalcPipe.projection = {
             vec4 d = texture(uSampler, uv + vec2(0, uSizePx.y));
             vec4 u = texture(uSampler, uv - vec2(0, uSizePx.y));
 
-            float div = (r.x - l.x) + (u.y - d.y);
+            float div = (l.x - r.x) + (u.y - d.y);
             
             color = texture(uSampler, uv);
-            color.w = (l.w + r.w+ d.w + u.w - 0.02 * div) * 0.25;
+            color.w = (l.w + r.w+ d.w + u.w - 0.05 * div) * 0.25;
         }
     `,
     bindUni: function(gl, prog) {
@@ -140,8 +143,8 @@ loadToxicCalcPipe.applyForce = {
             vec4 u = texture(uSampler, uv - vec2(0, uSizePx.y));
 
             color = texture(uSampler, uv);
-            color.xy -= vec2(r.w - l.w, d.w - u.w);
-            color.y += dT * color.b * 10.0;
+            color.xy -= vec2(l.w - r.w, u.w - d.w) * dT;
+            color.y -= dT * color.b * .6;
         }
     `,
     bindUni: function(gl, prog) {
@@ -164,18 +167,23 @@ loadToxicCalcPipe.boarder = {
 
         layout(location = 0) out vec4 color;
         void main() {
-            float d = texture(uSampler, uv).b;
-
-            if(uv.x < border.x) {
-                color.xyw = texture(uSampler, vec2(border.x, uv.y)).xyw * vec3(-1.0, -1.0, 1.0);
-            } else if(uv.x > (1.0 - border.x)) {
-                color.xyw = texture(uSampler, vec2(1.0 - border.x, uv.y)).xyw * vec3(-1.0, -1.0, 1.0);
-            } else if(uv.y < border.y) {
-                color.xyw = texture(uSampler, vec2(uv.x, border.y)).xyw * vec3(-1.0, -1.0, 1.0);
-            } else if(uv.y > (1.0 - border.y)){
-                color.xyw = texture(uSampler, vec2(uv.x, 1.0 - border.y)).xyw * vec3(-1.0, -1.0, 1.0);
-            } else {
-                color.xyw = texture(uSampler, uv).xyw;
+					float d = texture(uSampler, uv).b;
+					float lmr = uv.x < border.x
+						? -1.
+						: uv.x > (1.0 - border.x)
+							? 1.
+							: 0.;
+					float tmb = uv.y < border.y
+						? -1.
+						: uv.y > (1.0 - border.y)
+							? 1.
+							: 0.;
+						if(tmb * lmr != 0.) {		
+							color.xyw =
+								texture(uSampler, uv + vec2( border.x * lmr, border.y * tmb)).xyw
+								* vec3((lmr != 0. ? -1. : 0.), (tmb != 0. ? -1. : 0.), 1.);
+						} else {
+               color.xyw = texture(uSampler, uv).xyw;
             }
             color.b = d;
         }
@@ -203,8 +211,7 @@ loadToxicCalcPipe.addSource = {
         void main() {
             color = texture(uSampler, uv);
             float s = texture(src, uv).b;
-            color.b += s * dT * 1.5;
-            // color.a = 0.0;
+            color.b += s * dT * .3;
         }
     `,
     bindUni: function(gl, prog) {
@@ -243,7 +250,9 @@ function loadToxicRenderPipe(gl) {
 
         void main() {
             vec4 val = texture2D(uSampler, uv);
-            gl_FragColor = vec4(uColor, val.b);
+            // gl_FragColor = vec4(val.x * -0., val.x * 0., val.b * 1. , 1.0);
+						// gl_FragColor = vec4(0, 0, val.b, 1.);
+						gl_FragColor = vec4(uColor, val.b);
         }
         `;
 
@@ -287,6 +296,7 @@ class Toxic {
         const createTextureWS = function(w, h) {
             return function(data) {
                 const tex = gl.createTexture();
+								console.log(data);
                 console.log(w + " " + h);
                 gl.bindTexture(gl.TEXTURE_2D, tex);
                 gl.texImage2D(
@@ -304,7 +314,7 @@ class Toxic {
         this.tSrc = [];
         this.tDst = [];
         this.tSrc[0] = createTexture(start.map(function(x,id){ 
-            const trans = [0, 0, 0, 0.5];
+            const trans = [0, 0, 0.0, 0.0];
             if(x > 1.0) throw "too large";
             return trans[id % 4];
         }));
@@ -457,16 +467,15 @@ class Toxic {
     diffuse(dT, amt) {
         this.gl.useProgram(this.diffusePipe.prog);
 
-        const alpha = 0.02 /*dx*dx*/ / (/*viscosity*/ 1.0 * dT);
+        const alpha = 1.0 /*dx*dx*/ / (/*viscosity*/ 1.0 * dT);
         const beta = 1.0 / (4.0 + alpha);
         for(var i = 0; i < amt; i++) {
             this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, this.fbDst);
 
             this.bindTextures(this.diffusePipe);
-
-            this.gl.uniform2f(this.diffusePipe.uniLoc.size, 1.0 / this.w, 1.0 / this.h);
+            this.gl.uniform2f(this.diffusePipe.uniLoc.size, .5 / this.w, .5 / this.h);
             this.gl.uniform1f(this.diffusePipe.uniLoc.alpha, alpha);
-            this.gl.uniform2f(this.diffusePipe.uniLoc.beta, beta * 1.0, beta);
+            this.gl.uniform2f(this.diffusePipe.uniLoc.beta, beta, beta);
             this.gl.uniform1i(this.diffusePipe.uniLoc.layer, 3);
 
             this.gl.drawArrays(this.gl.TRIANGLE_STRIP, 0, 4);
@@ -515,7 +524,7 @@ class Toxic {
 
         this.bindTextures(this.borderPipe);
 
-        this.gl.uniform2f(this.borderPipe.uniLoc.border, 1.5 / this.w, 1.5 / this.h);
+        this.gl.uniform2f(this.borderPipe.uniLoc.border, 1.6 / this.w, 1.6 / this.h);
 
         this.gl.drawArrays(this.gl.TRIANGLE_STRIP, 0, 4);
 
